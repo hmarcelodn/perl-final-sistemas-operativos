@@ -10,32 +10,37 @@ use warnings;
 use Planificador;
 use Cola;
 use Proceso;
+use Despachador;
 
-# Colas de corto plazo
-# my $cola_listos = Cola->new();
-# my $cola_ejecutando = Cola->new();
-# my $cola_bloqueados = Cola->new();
+# Colas Planificacion de corto plazo
+my $cola_listos = Cola->new();
+my $cola_ejecutando = Cola->new();
 
-# Colas de largo plazo
+# Colas Planificacion de largo plazo
 my $cola_nuevos = Cola->new();
-# my $cola_salida = Cola->new();
+my $cola_salida = Cola->new();
 
-# Planificador
-my $planificador = Planificador->new();
+# Planificador / Despachador
+my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
+my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
 
 my $ciclos = 0;
 
+# print $cola_nuevos->contar()."\n";
+# $cola_nuevos->encolar( Proceso->new(1,2) );
+# $cola_nuevos->encolar( Proceso->new(3,4) );
+# print $cola_nuevos->contar()."\n";
+
 # CPU Ciclos
-# while(1) {
-#     printf "Ciclo # $ciclos \n";
+while(1) {
+    printf "Ciclo # $ciclos \n";
 
-    print $cola_nuevos->contar()."\n";
-    $cola_nuevos->encolar( Proceso->new(1,2) );
-    $cola_nuevos->encolar( Proceso->new(3,4) );
-    print $cola_nuevos->contar()."\n";
+    $planificador->actualizar_ciclos($ciclos);
+    $planificador->planificar();
+    $despachador->despachar();
 
-#     $ciclos = $ciclos + 1;
-# }
+    $ciclos = $ciclos + 1;
+}
 
 # // Fran:
 # // 1. Implementar DB, Implementar Escritor, Implementar Lector

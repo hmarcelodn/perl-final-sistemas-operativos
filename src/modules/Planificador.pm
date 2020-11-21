@@ -14,14 +14,16 @@ sub new {
     };
 
     bless $self, $class;
+
     return $self;
 }
 
 # Seleccionar siguiente proceso
-# sub seleccionar() {
-#     my ( $self ) = @_;
-#     return $self->_listos.shift();
-# }
+sub planificar() {
+    my ( $self ) = @_;
+
+    return $self->{_ciclos};
+}
 
 # # Agregar proceso nuevo a la cola de nuevos procesos
 # sub planificar_nuevo() {
@@ -31,10 +33,9 @@ sub new {
 # }
 
 # # Actualizar el ciclo de CPU actual
-# sub actualizar_ciclos() {
-#     my ( $self ) = @_;
-#     my ciclo_cpu = shift;
-#     # $self->_ciclos = ciclo_cpu;
-# }
+sub actualizar_ciclos() {
+    my ( $self, $ciclos ) = @_;
+    $self->{_ciclos} = $ciclos;
+}
 
 1;

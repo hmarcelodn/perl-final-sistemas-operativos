@@ -2,11 +2,14 @@
 
 package Cola;
 
+use strict;
+use warnings;
+
 sub new {
     my $class = shift;
 
     my $self = {
-        _items => [3],
+        _items => [],
     };
 
     bless $self, $class;
@@ -24,9 +27,9 @@ sub encolar() {
     push(@{$self->{_items}}, $item);
 }
 
-# sub desencolar() {
-#     my ( $self ) = @_;
-#     return shift($self->_items);
-# }
+sub desencolar() {
+    my ( $self ) = @_;
+    return shift(@{$self->{_items}});
+}
 
 1;
