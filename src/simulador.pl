@@ -9,29 +9,33 @@ use warnings;
 
 use Planificador;
 use Cola;
+use Proceso;
+
+# Colas de corto plazo
+# my $cola_listos = Cola->new();
+# my $cola_ejecutando = Cola->new();
+# my $cola_bloqueados = Cola->new();
+
+# Colas de largo plazo
+my $cola_nuevos = Cola->new();
+# my $cola_salida = Cola->new();
 
 # Planificador
 my $planificador = Planificador->new();
 
-# Colas de corto plazo
-my $cola_listos = Cola->new();
-my $cola_ejecutando = Cola->new();
-my $cola_bloqueados = Cola->new();
-
-# Colas de largo plazo
-my $cola_nuevos = Cola->new();
-my $cola_salida = Cola->new();
-
 my $ciclos = 0;
 
 # CPU Ciclos
-while(1) {
-    printf "Ciclo # $ciclos \n";
+# while(1) {
+#     printf "Ciclo # $ciclos \n";
 
-    
+    print $cola_nuevos->contar()."\n";
+    $cola_nuevos->encolar( Proceso->new(1,2) );
+    $cola_nuevos->encolar( Proceso->new(3,4) );
+    print $cola_nuevos->contar()."\n";
 
-    $ciclos = $ciclos + 1;
-}
+#     $ciclos = $ciclos + 1;
+# }
 
 # // Fran:
 # // 1. Implementar DB, Implementar Escritor, Implementar Lector
