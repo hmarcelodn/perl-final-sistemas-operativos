@@ -19,8 +19,17 @@ sub new {
     return $self;
 }
 
+# Sacar el proximo proceso listo de la cola de listos
+# Poner en la cola de procesos en ejecucion al proceso siguiente
 sub despachar() {
-    
+    my ( $self ) = @_;
+
+    if ( $self->{_listos}->contar() > 0 ) {
+        my $proceso_ejecucion = $self->{_listos}->desencolar();
+        $self->{_ejecutando}->encolar($proceso_ejecucion);
+    } else {
+        print "NINGUN PROCESO PARA DESPACHAR"
+    }
 }
 
 1;

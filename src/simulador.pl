@@ -27,8 +27,8 @@ my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando,
 my $ciclos = 0;
 
 # print $cola_nuevos->contar()."\n";
-# $cola_nuevos->encolar( Proceso->new(1,2) );
-# $cola_nuevos->encolar( Proceso->new(3,4) );
+$cola_nuevos->encolar( Proceso->new(1,2) );
+$cola_nuevos->encolar( Proceso->new(3,4) );
 # print $cola_nuevos->contar()."\n";
 
 # CPU Ciclos
