@@ -24,22 +24,27 @@ my $cola_salida = Cola->new();
 my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
 my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
 
+# Reloj CPU
 my $ciclos = 0;
 
-# print $cola_nuevos->contar()."\n";
-$cola_nuevos->encolar( Proceso->new(1,2) );
-$cola_nuevos->encolar( Proceso->new(3,4) );
-# print $cola_nuevos->contar()."\n";
+# Procesos Mock - Planificacion Largo Plazo
+$cola_nuevos->encolar( Proceso->new(1,2, "P0") );
+$cola_nuevos->encolar( Proceso->new(3,4, "P1") );
+
+# Procesos Mock - Planificacion Corto Plazo
+$cola_listos->encolar( Proceso->new(1,2, "P0") );
+$cola_listos->encolar( Proceso->new(3,4, "P1") );
 
 # CPU Ciclos
 while(1) {
-    printf "Ciclo # $ciclos \n";
+    printf "\nCiclo # $ciclos ⏰ \n";
 
     $planificador->actualizar_ciclos($ciclos);
     $planificador->planificar();
     $despachador->despachar();
 
     $ciclos = $ciclos + 1;
+    sleep(5)
 }
 
 # // Fran:

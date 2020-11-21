@@ -9,8 +9,9 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _inicio => shift,
-        _fin => shift,
+        _llegada => shift,
+        _cpu_duracion => shift,
+        _proceso_id => shift
     };
 
     bless $self, $class;
@@ -18,14 +19,20 @@ sub new {
     return $self
 }
 
-sub inicio_T() {
+sub llegada() {
     my ( $self ) = @_;
-    return $self->_inicio;
+    return $self->{_llegada};
 }
 
-sub fin_T() {
+sub cpu_duracion() {
     my ( $self ) = @_;
-    return $self->fin;
+    return $self->{_cpu_duracion};
+}
+
+sub proceso_id() {
+    my ( $self ) = @_;
+
+    return $self->{_proceso_id};
 }
 
 1;

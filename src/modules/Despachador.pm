@@ -27,8 +27,9 @@ sub despachar() {
     if ( $self->{_listos}->contar() > 0 ) {
         my $proceso_ejecucion = $self->{_listos}->desencolar();
         $self->{_ejecutando}->encolar($proceso_ejecucion);
+        print "EJECUTANDO PROCESO ".$proceso_ejecucion->proceso_id()." 🚀 \n";
     } else {
-        print "NINGUN PROCESO PARA DESPACHAR"
+        print "NINGUN PROCESO PARA DESPACHAR \n"
     }
 }
 
