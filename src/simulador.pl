@@ -35,30 +35,41 @@ my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando,
 # Reloj CPU
 my $ciclos = 0;
 
-# Procesos Mock - Planificacion Largo Plazo
-$cola_nuevos->encolar( Proceso->new(2,2, "P0", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P1", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P2", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P3", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P4", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P5", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P6", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P7", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(2,2, "P8", "NUEVO") );
-
-# Emulacion de ciclos de CPU
-print "=====================================\n";
-print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
-print "=====================================\n";
-
-while(1) {
-    printf "\nCICLO CPU ($ciclos) ⏰  \n";
-
-    $planificador->actualizar_ciclos($ciclos);
-    $planificador->planificar(); # Planifica el siguiente proceso
-    $despachador->despachar(); # Despacha al CPU el proceso planificado
-    $cpu->ejecutar();
-
-    $ciclos = $ciclos + 1;
-    sleep(5);
+=pod
+Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
+=cut
+sub mock_procesos() {
+    $cola_nuevos->encolar( Proceso->new(2,2, "P0", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P1", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P2", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P3", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P4", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P5", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P6", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P7", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(2,2, "P8", "NUEVO") );
 }
+
+=pod
+Subrutina para simular ciclos de CPU
+=cut
+sub simular() {
+    print "=====================================\n";
+    print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
+    print "=====================================\n";
+
+    while(1) {
+        printf "\nCICLO CPU ($ciclos) ⏰  \n";
+
+        $planificador->actualizar_ciclos($ciclos);
+        $planificador->planificar(); # Planifica el siguiente proceso
+        $despachador->despachar(); # Despacha al CPU el proceso planificado
+        $cpu->ejecutar();
+
+        $ciclos = $ciclos + 1;
+        sleep(5);
+    }
+}
+
+mock_procesos();
+simular();
