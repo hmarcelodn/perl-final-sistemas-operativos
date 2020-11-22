@@ -36,12 +36,15 @@ my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando,
 my $ciclos = 0;
 
 # Procesos Mock - Planificacion Largo Plazo
-$cola_nuevos->encolar( Proceso->new(1,2, "P0", "NUEVO") );
-$cola_nuevos->encolar( Proceso->new(3,4, "P1", "NUEVO") );
-
-# Procesos Mock - Planificacion Corto Plazo
-$cola_listos->encolar( Proceso->new(1,2, "P0", "LISTO") );
-$cola_listos->encolar( Proceso->new(3,4, "P1", "LISTO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P0", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P1", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P2", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P3", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P4", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P5", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P6", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P7", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(2,2, "P8", "NUEVO") );
 
 # CPU Ciclos
 print "=====================================\n";
@@ -57,5 +60,5 @@ while(1) {
     $cpu->ejecutar();
 
     $ciclos = $ciclos + 1;
-    sleep(3);
+    sleep(5);
 }
