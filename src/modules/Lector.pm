@@ -5,6 +5,9 @@ package Lector;
 use strict;
 use warnings;
 
+=pod
+Representa un proceso Lector generalizado a partir del paquete Proceso
+=cut
 sub new {
     my $class = shift;
     my $self = {};

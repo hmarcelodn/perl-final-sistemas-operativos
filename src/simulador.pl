@@ -46,7 +46,7 @@ $cola_nuevos->encolar( Proceso->new(2,2, "P6", "NUEVO") );
 $cola_nuevos->encolar( Proceso->new(2,2, "P7", "NUEVO") );
 $cola_nuevos->encolar( Proceso->new(2,2, "P8", "NUEVO") );
 
-# CPU Ciclos
+# Emulacion de ciclos de CPU
 print "=====================================\n";
 print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
 print "=====================================\n";
