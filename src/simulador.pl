@@ -2,7 +2,8 @@
 
 package main;
 
-use lib '/Users/admin/Desktop/Projects/perl-final-sistemas-operativos/src/modules';
+use FindBin qw( $RealBin );
+use lib "$RealBin/../src/modules";
 
 use strict;
 use warnings;
