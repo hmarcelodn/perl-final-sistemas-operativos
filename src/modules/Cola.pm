@@ -44,4 +44,12 @@ sub desencolar() {
     return shift(@{$self->{_items}});
 }
 
+=pod
+Pedir una copia del arreglo de la cola
+=cut
+sub obtener_arreglo() {
+    my ( $self ) = @_;
+    return @{$self->{_items}};
+}
+
 1;

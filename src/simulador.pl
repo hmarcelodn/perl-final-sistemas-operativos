@@ -15,6 +15,7 @@ use Escritor; # TODO: Heredar Proceso
 use Lector; # TODO: Heredar Proceso
 use Db; # TODO: Implementar
 use Cpu; # TODO: Implementar?
+use Monitor;
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Cola->new();
@@ -32,6 +33,9 @@ my $base_datos = Db->new();
 my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cpu);
 my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cpu);
 
+# Instancia del monitor
+my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
+
 # Reloj CPU
 my $ciclos = 0;
 
@@ -40,14 +44,14 @@ Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
     $cola_nuevos->encolar( Proceso->new(2,2, "P0", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P1", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P2", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P3", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P4", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P5", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P6", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P7", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(2,2, "P8", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(3,2, "P1", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(4,2, "P2", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(5,2, "P3", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(6,2, "P4", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(7,2, "P5", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(10,2, "P6", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(12,2, "P7", "NUEVO") );
+    $cola_nuevos->encolar( Proceso->new(22,2, "P8", "NUEVO") );
 }
 
 =pod
@@ -67,7 +71,8 @@ sub simular() {
         $cpu->ejecutar();
 
         $ciclos = $ciclos + 1;
-        sleep(5);
+        $monitor->imprimir_estado_colas();
+        sleep(2);
     }
 }
 
