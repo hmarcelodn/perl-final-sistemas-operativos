@@ -10,8 +10,9 @@ sub new {
 
     my $self = {
         _llegada => shift,
-        _cpu_ciclos_restantes => shift,
-        _proceso_id => shift
+        _tiempo_servicio => shift,
+        _proceso_id => shift,
+        _estado => shift,
     };
 
     bless $self, $class;
@@ -24,9 +25,9 @@ sub llegada() {
     return $self->{_llegada};
 }
 
-sub cpu_ciclos_restantes() {
+sub tiempo_servicio() {
     my ( $self ) = @_;
-    return $self->{_cpu_ciclos_restantes};
+    return $self->{_tiempo_servicio};
 }
 
 sub proceso_id() {
@@ -35,10 +36,25 @@ sub proceso_id() {
     return $self->{_proceso_id};
 }
 
+sub cambiar_a_ejecutando() {
+    my ( $self ) = @_;
+    $self->{_estado} = "EJECUTANDO";
+}
+
+sub cambiar_a_listo() {
+    my ( $self ) = @_;
+    $self->{_estado} = "LISTO";
+}
+
+sub cambiar_a_finalizado() {
+    my ( $self ) = @_;
+    $self->{_estado} = "FINALIZADO";
+}
+
 sub ejecutar() {
     my ( $self ) = @_;
 
-    print "CPU EJECUTANDO $self->{_proceso_id}"
+    print "CPU PROCESO $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
 }
 
 1;

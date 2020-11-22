@@ -11,6 +11,7 @@ sub new {
         _nuevos => shift,
         _listos => shift,
         _ciclos => shift,
+        _cpu => shift,
     };
 
     bless $self, $class;

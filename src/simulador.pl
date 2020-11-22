@@ -24,24 +24,24 @@ my $cola_ejecutando = Cola->new();
 my $cola_nuevos = Cola->new();
 my $cola_salida = Cola->new();
 
-# Planificador / Despachador
-my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
-my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
-
 # CPU / Base de datos
 my $cpu = Cpu->new($cola_ejecutando);
 my $base_datos = Db->new();
+
+# Planificador / Despachador
+my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cpu);
+my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cpu);
 
 # Reloj CPU
 my $ciclos = 0;
 
 # Procesos Mock - Planificacion Largo Plazo
-$cola_nuevos->encolar( Proceso->new(1,2, "P0") );
-$cola_nuevos->encolar( Proceso->new(3,4, "P1") );
+$cola_nuevos->encolar( Proceso->new(1,2, "P0", "NUEVO") );
+$cola_nuevos->encolar( Proceso->new(3,4, "P1", "NUEVO") );
 
 # Procesos Mock - Planificacion Corto Plazo
-$cola_listos->encolar( Proceso->new(1,2, "P0") );
-$cola_listos->encolar( Proceso->new(3,4, "P1") );
+$cola_listos->encolar( Proceso->new(1,2, "P0", "LISTO") );
+$cola_listos->encolar( Proceso->new(3,4, "P1", "LISTO") );
 
 # CPU Ciclos
 print "=====================================\n";

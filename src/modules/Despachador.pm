@@ -12,6 +12,7 @@ sub new {
         _listos => shift,
         _ejecutando => shift,
         _salida => shift,
+        _cpu => shift,
     };
 
     bless $self, $class;
@@ -24,10 +25,16 @@ sub new {
 sub despachar() {
     my ( $self ) = @_;
 
-    if ( $self->{_listos}->contar() > 0 ) {
+    if ( $self->{_listos}->contar() > 0 && $self->{_cpu}->estado() eq "LIBRE" ) {
         my $proceso_ejecucion = $self->{_listos}->desencolar();
-        $self->{_ejecutando}->encolar($proceso_ejecucion);
-        print "DESPACHA PROCESO ".$proceso_ejecucion->proceso_id()." 🚀 \n";
+
+        print "DESPACHA PROCESO ".$proceso_ejecucion->proceso_id()." \n";
+
+        $proceso_ejecucion->cambiar_a_ejecutando();
+        $self->{_cpu}->asignar($proceso_ejecucion);
+        #$self->{_ejecutando}->encolar($proceso_ejecucion);
+    } elsif ( $self->{_listos}->contar() > 0 && $self->{_cpu}->estado() eq "OCUPADO" ) {
+        print $self->{_listos}->contar()." PROCESOS PARA DESPACHAR ESPERANDO \n";
     } else {
         print "NINGUN PROCESO PARA DESPACHAR \n"
     }
