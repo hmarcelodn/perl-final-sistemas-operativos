@@ -32,6 +32,7 @@ sub despachar() {
     if ( $self->{_listos}->contar() > 0 && $self->{_cpu}->estado() eq "LIBRE" ) {
         my $proceso_ejecucion = $self->{_listos}->desencolar();
 
+        print $self->{_listos}->contar()." PROCESOS PARA DESPACHAR ESPERANDO \n";
         print "DESPACHA PROCESO ".$proceso_ejecucion->proceso_id()." \n";
 
         $proceso_ejecucion->cambiar_a_ejecutando();
