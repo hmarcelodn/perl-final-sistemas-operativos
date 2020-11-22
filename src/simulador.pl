@@ -71,7 +71,7 @@ sub simular() {
         $cpu->ejecutar();
 
         $ciclos = $ciclos + 1;
-        $monitor->imprimir_estado_colas();
+        # $monitor->imprimir_estado_colas();
         sleep(2);
     }
 }
