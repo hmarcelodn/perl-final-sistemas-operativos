@@ -35,4 +35,10 @@ sub proceso_id() {
     return $self->{_proceso_id};
 }
 
+sub ejecutar() {
+    my ( $self ) = @_;
+
+    print "CPU EJECUTANDO $self->{_proceso_id}"
+}
+
 1;

@@ -28,6 +28,10 @@ my $cola_salida = Cola->new();
 my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
 my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
 
+# CPU / Base de datos
+my $cpu = Cpu->new($cola_ejecutando);
+my $base_datos = Db->new();
+
 # Reloj CPU
 my $ciclos = 0;
 
@@ -48,9 +52,10 @@ while(1) {
     printf "\nCICLO CPU ($ciclos) ⏰  \n";
 
     $planificador->actualizar_ciclos($ciclos);
-    $planificador->planificar();
-    $despachador->despachar();
+    $planificador->planificar(); # Planifica el siguiente proceso
+    $despachador->despachar(); # Despacha al CPU el proceso planificado
+    $cpu->ejecutar();
 
     $ciclos = $ciclos + 1;
-    sleep(2)
+    sleep(3);
 }

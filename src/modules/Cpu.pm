@@ -14,4 +14,8 @@ sub new {
     return $self
 }
 
+sub ejecutar() {
+    
+}
+
 1;
