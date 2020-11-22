@@ -10,7 +10,7 @@ sub new {
 
     my $self = {
         _llegada => shift,
-        _cpu_duracion => shift,
+        _cpu_ciclos_restantes => shift,
         _proceso_id => shift
     };
 
@@ -24,9 +24,9 @@ sub llegada() {
     return $self->{_llegada};
 }
 
-sub cpu_duracion() {
+sub cpu_ciclos_restantes() {
     my ( $self ) = @_;
-    return $self->{_cpu_duracion};
+    return $self->{_cpu_ciclos_restantes};
 }
 
 sub proceso_id() {

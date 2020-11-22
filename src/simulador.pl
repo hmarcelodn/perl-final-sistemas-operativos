@@ -9,8 +9,12 @@ use warnings;
 
 use Planificador;
 use Cola;
-use Proceso;
+use Proceso; # TODO: Proceso Base
 use Despachador;
+use Escritor; # TODO: Heredar Proceso
+use Lector; # TODO: Heredar Proceso
+use Db; # TODO: Implementar
+use Cpu; # TODO: Implementar?
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Cola->new();
@@ -36,29 +40,17 @@ $cola_listos->encolar( Proceso->new(1,2, "P0") );
 $cola_listos->encolar( Proceso->new(3,4, "P1") );
 
 # CPU Ciclos
+print "=====================================\n";
+print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
+print "=====================================\n";
+
 while(1) {
-    printf "\nCiclo # $ciclos ⏰ \n";
+    printf "\nCICLO CPU ($ciclos) ⏰  \n";
 
     $planificador->actualizar_ciclos($ciclos);
     $planificador->planificar();
     $despachador->despachar();
 
     $ciclos = $ciclos + 1;
-    sleep(5)
+    sleep(2)
 }
-
-# // Fran:
-# // 1. Implementar DB, Implementar Escritor, Implementar Lector
-# // 2. Armar semaforos
-# // 3. Sincronizar todo
-
-# // Marce:
-# // 1. Implementar TDA cola
-# // 2. Implementar FIFO en el planificador
-# // 3. Armar el dispatcher
-
-# // Despues:
-# // 1. Lanzar procesos hardcodeados
-# // 2. Agregar dinamicamente procesos
-# // 3. Monitorear
-
