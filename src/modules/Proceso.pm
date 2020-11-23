@@ -79,7 +79,7 @@ Ejecuta comportamiento de proceso
 sub ejecutar() {
     my ( $self ) = @_;
 
-    print "CPU PROCESO $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
+    # print "CPU PROCESO $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
 }
 
 1;

@@ -29,19 +29,19 @@ Tomar proceso de la cola de listos, si el CPU se encuentra LIBRE y asignarle/des
 sub despachar() {
     my ( $self ) = @_;
 
-    if ( $self->{_listos}->contar() > 0 && $self->{_cpu}->estado() eq "LIBRE" ) {
-        my $proceso_ejecucion = $self->{_listos}->desencolar();
+    if ( $self->{_listos}->pending() > 0 && $self->{_cpu}->estado() eq "LIBRE" ) {
+        my $proceso_ejecucion = $self->{_listos}->dequeue();
 
-        print $self->{_listos}->contar()." PROCESOS PARA DESPACHAR ESPERANDO \n";
-        print "DESPACHA PROCESO ".$proceso_ejecucion->proceso_id()." \n";
+        # print $self->{_listos}->pending()." PROCESOS PARA DESPACHAR ESPERANDO \n";
+        # print "DESPACHA PROCESO ".$proceso_ejecucion->proceso_id()." \n";
 
         $proceso_ejecucion->cambiar_a_ejecutando();
         $self->{_cpu}->asignar($proceso_ejecucion);
         # $self->{_ejecutando}->encolar($proceso_ejecucion);
-    } elsif ( $self->{_listos}->contar() > 0 && $self->{_cpu}->estado() eq "OCUPADO" ) {
-        print $self->{_listos}->contar()." PROCESOS PARA DESPACHAR ESPERANDO \n";
+    } elsif ( $self->{_listos}->pending() > 0 && $self->{_cpu}->estado() eq "OCUPADO" ) {
+        # print $self->{_listos}->pending()." PROCESOS PARA DESPACHAR ESPERANDO \n";
     } else {
-        print "NINGUN PROCESO PARA DESPACHAR \n"
+        # print "NINGUN PROCESO PARA DESPACHAR \n"
     }
 }
 

@@ -4,9 +4,16 @@ package main;
 
 use lib '/Users/admin/Desktop/Projects/perl-final-sistemas-operativos/src/modules';
 
+# Modulos de Perl
 use strict;
 use warnings;
+use threads;
+use threads::shared;
+use Thread::Queue;
 
+# threads->exit();
+
+# Modulos
 use Planificador;
 use Cola;
 use Proceso; # TODO: Proceso Base
@@ -17,13 +24,21 @@ use Db; # TODO: Implementar
 use Cpu; # TODO: Implementar?
 use Monitor;
 
+# # Colas Planificacion de corto plazo
+# my $cola_listos = Cola->new();
+# my $cola_ejecutando = Cola->new();
+
+# # Colas Planificacion de largo plazo
+# my $cola_nuevos = Cola->new();
+# my $cola_salida = Cola->new();
+
 # Colas Planificacion de corto plazo
-my $cola_listos = Cola->new();
-my $cola_ejecutando = Cola->new();
+my $cola_listos = Thread::Queue->new();
+my $cola_ejecutando = Thread::Queue->new();
 
 # Colas Planificacion de largo plazo
-my $cola_nuevos = Cola->new();
-my $cola_salida = Cola->new();
+my $cola_nuevos = Thread::Queue->new();
+my $cola_salida = Thread::Queue->new();
 
 # CPU / Base de datos
 my $cpu = Cpu->new($cola_ejecutando);
@@ -43,15 +58,15 @@ my $ciclos = 0;
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->encolar( Proceso->new(2,2, "P0", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(3,2, "P1", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(4,2, "P2", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(5,2, "P3", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(6,2, "P4", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(7,2, "P5", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(10,2, "P6", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(12,2, "P7", "NUEVO") );
-    $cola_nuevos->encolar( Proceso->new(22,2, "P8", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(2,2, "P0", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(3,2, "P1", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(4,2, "P2", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(5,2, "P3", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(6,2, "P4", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(7,2, "P5", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(10,2, "P6", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(12,2, "P7", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(22,2, "P8", "NUEVO") );
 }
 
 =pod
@@ -59,21 +74,33 @@ Subrutina para simular ciclos de CPU
 =cut
 sub simular() {
     print "=====================================\n";
-    print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
+    print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
     print "=====================================\n";
 
+    # Auto flush de STDOUT
+    $| = 1;
+
+    # Thread 1 - Simulador
+    my $simulacion_hilo = threads->create(sub {
+        while(1) {
+            # print "\nCICLO CPU ($ciclos) ⏰  \n";
+
+            $planificador->actualizar_ciclos($ciclos);
+            $planificador->planificar(); # Planifica el siguiente proceso
+            $despachador->despachar(); # Despacha al CPU el proceso planificado
+            $cpu->ejecutar();
+
+            $ciclos = $ciclos + 1;
+            sleep 2;
+        }
+    });
+
     while(1) {
-        printf "\nCICLO CPU ($ciclos) ⏰  \n";
-
-        $planificador->actualizar_ciclos($ciclos);
-        $planificador->planificar(); # Planifica el siguiente proceso
-        $despachador->despachar(); # Despacha al CPU el proceso planificado
-        $cpu->ejecutar();
-
-        $ciclos = $ciclos + 1;
-        # $monitor->imprimir_estado_colas();
-        sleep(2);
+        $monitor->imprimir_estado_colas();
+        sleep 2;
     }
+
+    $simulacion_hilo->detach();
 }
 
 mock_procesos();

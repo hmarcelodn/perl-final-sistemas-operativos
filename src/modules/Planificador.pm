@@ -32,12 +32,12 @@ sub planificar() {
     my @nuevos = ();
 
     # Planificar procesos nuevos y moverlos a listos si cumple el tiempo de llegada
-    while ( $self->{_nuevos}->contar() > 0 ) {
-        my $proceso_nuevo = $self->{_nuevos}->desencolar();
+    while ( $self->{_nuevos}->pending() > 0 ) {
+        my $proceso_nuevo = $self->{_nuevos}->dequeue();
         my $ciclo_actual = $self->{_ciclos};
         my $proceso_nuevo_llegada = $proceso_nuevo->llegada();
         if ( $ciclo_actual >= $proceso_nuevo->llegada() ) {
-            $self->{_listos}->encolar($proceso_nuevo);
+            $self->{_listos}->enqueue($proceso_nuevo);
         } else {
             push( @nuevos, $proceso_nuevo );
         }
@@ -45,7 +45,7 @@ sub planificar() {
 
     # Encolar los procesos nuevos que no pueden entrar a la cola de listos aun
     foreach ( @nuevos ) {
-        $self->{_nuevos}->encolar( $_ );
+        $self->{_nuevos}->enqueue( $_ );
     }
 
     return $self->{_ciclos};

@@ -58,7 +58,7 @@ sub ejecutar() {
             $self->cambiar_libre();
         }
     } else {
-        print "CPU OCIOSO \n";
+        # print "CPU OCIOSO \n";
     }
 }
 
