@@ -12,7 +12,8 @@ sub new {
     my $class = shift;
     my $self = {
         _proceso => undef,
-        _estado => "LIBRE"
+        _estado => "LIBRE",
+        _ciclos => 0,
     };
 
     bless $self, $class;

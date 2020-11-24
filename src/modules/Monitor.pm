@@ -24,12 +24,15 @@ sub new() {
 Imprimir reporte de estado de colas
 =cut
 sub imprimir_estado_colas() {
-    my ( $self ) = @_;
+    my ( $self, $ciclos ) = @_;
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
 
     system("clear");
 
+    print "+ CPU CICLO: ".$ciclos." \n";
+    print "+ PROCESOS NUEVOS: ".$procesos_nuevos_pendientes." \n";
+    print "+ PROCESOS LISTOS: ".$procesos_listos_pendientes." \n\n";
     print "---------------------------------\n";
     print "COLA: LISTOS\n";
     print "---------------------------------\n";
@@ -56,10 +59,10 @@ sub imprimir_estado_colas() {
     my $proceso_nuevo_indice = 0;
     if ($procesos_nuevos_pendientes > 0) {
         while ($proceso_nuevo_indice < $procesos_nuevos_pendientes) {
-            my $proceso_listo = $self->{_nuevos}->peek($proceso_nuevo_indice);
-            my $proceso_id = $proceso_listo->proceso_id();
-            my $proceso_llegada = $proceso_listo->llegada();
-            my $proceso_servicio = $proceso_listo->tiempo_servicio();
+            my $proceso_nuevo = $self->{_nuevos}->peek($proceso_nuevo_indice);
+            my $proceso_id = $proceso_nuevo->proceso_id();
+            my $proceso_llegada = $proceso_nuevo->llegada();
+            my $proceso_servicio = $proceso_nuevo->tiempo_servicio();
             print "$proceso_id              $proceso_llegada            $proceso_servicio \n";
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
         }

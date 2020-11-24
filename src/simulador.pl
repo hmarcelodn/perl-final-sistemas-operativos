@@ -52,7 +52,7 @@ my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando,
 my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
 
 # Reloj CPU
-my $ciclos = 0;
+my $ciclos :shared = 0;
 
 =pod
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
@@ -96,7 +96,7 @@ sub simular() {
     });
 
     while(1) {
-        $monitor->imprimir_estado_colas();
+        $monitor->imprimir_estado_colas($ciclos);
         sleep 2;
     }
 
