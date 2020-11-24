@@ -1,18 +1,22 @@
 #!/usr/bin/perl
-use FindBin qw( $RealBin );
-use lib "$RealBin/../src/modules";
+
+package Escritor;
 
 use strict;
 use warnings;
 
-package Escritor;
-use Proceso;
-our @ISA = qw(Proceso);
+=pod
+Representa un proceso Escritor generalizado a partir del paquete Proceso
+=cut
+@ISA = qw( Proceso );
 
 sub new {
     my ($class) = @_;
 
     my $self = $class -> SUPER::new( $_[1], $_[2], $_[3] );
+    bless $self, $class;
+
+    return $self
 
 }
 
@@ -21,6 +25,5 @@ sub log_proceso() {
     printf "\nProceso Escritor $self->{$_[3]} arrivado en $self->{$_[1]} \n";
 }
 
-sub ejecutar_escritura() {
 
-}
+1;

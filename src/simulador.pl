@@ -10,8 +10,13 @@ use warnings;
 
 use Planificador;
 use Cola;
-use Proceso;
+use Proceso; # TODO: Proceso Base
 use Despachador;
+use Escritor; # TODO: Heredar Proceso
+use Lector; # TODO: Heredar Proceso
+use Db; # TODO: Implementar
+use Cpu; # TODO: Implementar?
+use Monitor;
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Cola->new();
@@ -21,45 +26,56 @@ my $cola_ejecutando = Cola->new();
 my $cola_nuevos = Cola->new();
 my $cola_salida = Cola->new();
 
+# CPU / Base de datos
+my $cpu = Cpu->new($cola_ejecutando);
+my $base_datos = Db->new();
+
 # Planificador / Despachador
-my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
-my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
+my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cpu);
+my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cpu);
+
+# Instancia del monitor
+my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
 
 # Reloj CPU
 my $ciclos = 0;
 
-# Procesos Mock - Planificacion Largo Plazo
-$cola_nuevos->encolar( Proceso->new(1,2, "P0") );
-$cola_nuevos->encolar( Proceso->new(3,4, "P1") );
-
-# Procesos Mock - Planificacion Corto Plazo
-$cola_listos->encolar( Proceso->new(1,2, "P0") );
-$cola_listos->encolar( Proceso->new(3,4, "P1") );
-
-# CPU Ciclos
-while(1) {
-    printf "\nCiclo # $ciclos ⏰ \n";
-
-    $planificador->actualizar_ciclos($ciclos);
-    $planificador->planificar();
-    $despachador->despachar();
-
-    $ciclos = $ciclos + 1;
-    sleep(5)
+=pod
+Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
+=cut
+sub mock_procesos() {
+    $cola_nuevos->encolar( Escritor->new(2,2, "P0", "NUEVO") );
+    $cola_nuevos->encolar( Lector->new(3,2, "P1", "NUEVO") );
+    $cola_nuevos->encolar( Escritor->new(4,2, "P2", "NUEVO") );
+    $cola_nuevos->encolar( Escritor->new(5,2, "P3", "NUEVO") );
+    $cola_nuevos->encolar( Escritor->new(6,2, "P4", "NUEVO") );
+    $cola_nuevos->encolar( Lector->new(7,2, "P5", "NUEVO") );
+    $cola_nuevos->encolar( Lector->new(10,2, "P6", "NUEVO") );
+    $cola_nuevos->encolar( Lector->new(12,2, "P7", "NUEVO") );
+    $cola_nuevos->encolar( Lector->new(22,2, "P8", "NUEVO") );
 }
 
-# // Fran:
-# // 1. Implementar DB, Implementar Escritor, Implementar Lector
-# // 2. Armar semaforos
-# // 3. Sincronizar todo
+=pod
+Subrutina para simular ciclos de CPU
+=cut
+sub simular() {
+    print "=====================================\n";
+    print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
+    print "=====================================\n";
 
-# // Marce:
-# // 1. Implementar TDA cola
-# // 2. Implementar FIFO en el planificador
-# // 3. Armar el dispatcher
+    while(1) {
+        printf "\nCICLO CPU ($ciclos) ⏰  \n";
 
-# // Despues:
-# // 1. Lanzar procesos hardcodeados
-# // 2. Agregar dinamicamente procesos
-# // 3. Monitorear
+        $planificador->actualizar_ciclos($ciclos);
+        $planificador->planificar(); # Planifica el siguiente proceso
+        $despachador->despachar(); # Despacha al CPU el proceso planificado
+        $cpu->ejecutar();
 
+        $ciclos = $ciclos + 1;
+        # $monitor->imprimir_estado_colas();
+        sleep(2);
+    }
+}
+
+mock_procesos();
+simular();
