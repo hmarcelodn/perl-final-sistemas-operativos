@@ -52,9 +52,11 @@ sub imprimir_estado_colas() {
             my $proceso_id = $proceso_listo->proceso_id();
             my $proceso_llegada = $proceso_listo->llegada();
             my $proceso_servicio = $proceso_listo->tiempo_servicio();
-            print "| $proceso_id              $proceso_llegada            $proceso_servicio | \n";
+            print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_listo_indice = $proceso_listo_indice + 1;
         }
+
+        print "-----------------------------------\n";
     }
 
     print "\n\n\n\n";
@@ -70,10 +72,14 @@ sub imprimir_estado_colas() {
             my $proceso_id = $proceso_nuevo->proceso_id();
             my $proceso_llegada = $proceso_nuevo->llegada();
             my $proceso_servicio = $proceso_nuevo->tiempo_servicio();
-            print "| $proceso_id              $proceso_llegada            $proceso_servicio | \n";
+            print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
         }
+
+        print "-----------------------------------\n";
     }
+
+    print "\n\n Presione Enter para salir...";
 }
 
 1;
