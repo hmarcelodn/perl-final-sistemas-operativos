@@ -11,6 +11,7 @@ use threads;
 use threads::shared;
 use Thread::Queue;
 use feature qw(switch);
+use Term::ReadKey;
 
 # threads->exit();
 
@@ -125,17 +126,22 @@ sub simular() {
 
                 print "INGRESAR PID: ";
                 $nuevo_proceso_pid = <STDIN>;
+                chomp $nuevo_proceso_pid;
+
                 print "INGRESAR TIEMPO LLEGADA: ";
                 $nuevo_proceso_llegada = <STDIN>;
+                chomp $nuevo_proceso_llegada;
+
                 print "INGRESAR TIEMPO DE SERVICIO: ";
                 $nuevo_proceso_servicio = <STDIN>;
+                chomp $nuevo_proceso_servicio;
 
                 $cola_nuevos->enqueue( Proceso->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
                 print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
             }
             when (2) {
-                print "MONITOREAR COLAS DE PLANIFICACION \n";
-                while(1) {
+                my $key;
+                while(not defined ($key = ReadKey(-1))) {
                     $monitor->imprimir_estado_colas($ciclos);
                     sleep 2;
                 }
