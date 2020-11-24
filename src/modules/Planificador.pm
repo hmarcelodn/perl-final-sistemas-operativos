@@ -29,14 +29,15 @@ Verificar que proceso de la cola _nuevos deben pasar a la cola de listos
 sub planificar() {
     my ( $self ) = @_;
 
+    # lock($self->{_nuevos});
     my @nuevos = ();
 
     # Planificar procesos nuevos y moverlos a listos si cumple el tiempo de llegada
     while ( $self->{_nuevos}->pending() > 0 ) {
-        my $proceso_nuevo = $self->{_nuevos}->dequeue();
+        my $proceso_nuevo = $self->{_nuevos}->dequeue_nb();
         my $ciclo_actual = $self->{_ciclos};
         my $proceso_nuevo_llegada = $proceso_nuevo->llegada();
-        if ( $ciclo_actual >= $proceso_nuevo->llegada() ) {
+        if ( $ciclo_actual == $proceso_nuevo->llegada() ) {
             $self->{_listos}->enqueue($proceso_nuevo);
         } else {
             push( @nuevos, $proceso_nuevo );

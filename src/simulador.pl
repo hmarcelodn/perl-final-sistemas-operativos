@@ -10,6 +10,7 @@ use warnings;
 use threads;
 use threads::shared;
 use Thread::Queue;
+use feature qw(switch);
 
 # threads->exit();
 
@@ -23,14 +24,6 @@ use Lector; # TODO: Heredar Proceso
 use Db; # TODO: Implementar
 use Cpu; # TODO: Implementar?
 use Monitor;
-
-# # Colas Planificacion de corto plazo
-# my $cola_listos = Cola->new();
-# my $cola_ejecutando = Cola->new();
-
-# # Colas Planificacion de largo plazo
-# my $cola_nuevos = Cola->new();
-# my $cola_salida = Cola->new();
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Thread::Queue->new();
@@ -58,8 +51,8 @@ my $ciclos :shared = 0;
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Proceso->new(2,2, "P0", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(3,2, "P1", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(2, 2, "P0", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(3, 2, "P1", "NUEVO") );
     $cola_nuevos->enqueue( Proceso->new(4,2, "P2", "NUEVO") );
     $cola_nuevos->enqueue( Proceso->new(5,2, "P3", "NUEVO") );
     $cola_nuevos->enqueue( Proceso->new(6,2, "P4", "NUEVO") );
@@ -73,10 +66,6 @@ sub mock_procesos() {
 Subrutina para simular ciclos de CPU
 =cut
 sub simular() {
-    print "=====================================\n";
-    print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
-    print "=====================================\n";
-
     # Auto flush de STDOUT
     $| = 1;
 
@@ -85,22 +74,83 @@ sub simular() {
         while(1) {
             # print "\nCICLO CPU ($ciclos) ⏰  \n";
 
-            $planificador->actualizar_ciclos($ciclos);
+            $planificador->actualizar_ciclos($ciclos); # Actualizar los ciclos del planificador
             $planificador->planificar(); # Planifica el siguiente proceso
-            $despachador->despachar(); # Despacha al CPU el proceso planificado
+
+            # $monitor->imprimir_estado_colas($ciclos); # Mostrar colas antes de procesar
+            sleep 2;
+
+            $despachador->despachar();
             $cpu->ejecutar();
+            # $monitor->imprimir_estado_colas($ciclos); # Mostrar colas despues de procesar
 
             $ciclos = $ciclos + 1;
-            sleep 2;
         }
     });
 
-    while(1) {
-        $monitor->imprimir_estado_colas($ciclos);
-        sleep 2;
-    }
-
     $simulacion_hilo->detach();
+
+    # TODO: Consola interactiva con usuario
+    while(1) {
+        # $monitor->imprimir_estado_colas($ciclos);
+        system("clear");
+        print "=====================================\n";
+        print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
+        print "=====================================\n";
+        print "AYUDA GESTOR DE PROCESOS \n\n";
+        print "1) AGREGAR UN NUEVO PROCESO \n";
+        print "2) MONITOREAR COLAS DE PLANIFICACION \n";
+        print "3) TERMINAR \n\n";
+
+        my $opcion = 0;
+
+        # Solicitar ingreso del comando en menu
+        while ($opcion < 1 || $opcion > 3) {
+            print "+ INGRESAR OPCION: ";
+            $opcion = <STDIN>;
+            chomp $opcion;
+
+            if ($opcion < 1 || $opcion > 3) {
+                print "- OPCION INCORRECTA \n";
+            }
+        }
+
+        given ($opcion)
+        {
+            when (1) {
+                print "AGREGAR UN NUEVO PROCESO \n";
+                my $nuevo_proceso_pid;
+                my $nuevo_proceso_llegada;
+                my $nuevo_proceso_servicio;
+
+                print "INGRESAR PID: ";
+                $nuevo_proceso_pid = <STDIN>;
+                print "INGRESAR TIEMPO LLEGADA: ";
+                $nuevo_proceso_llegada = <STDIN>;
+                print "INGRESAR TIEMPO DE SERVICIO: ";
+                $nuevo_proceso_servicio = <STDIN>;
+
+                $cola_nuevos->enqueue( Proceso->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+                print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
+            }
+            when (2) {
+                print "MONITOREAR COLAS DE PLANIFICACION \n";
+                while(1) {
+                    $monitor->imprimir_estado_colas($ciclos);
+                    sleep 2;
+                }
+            }
+            when (3) {
+                print "SALIR \n";
+                exit;
+            }
+            default {
+                print 0;
+            }
+        }
+
+        sleep 1;
+    }
 }
 
 mock_procesos();

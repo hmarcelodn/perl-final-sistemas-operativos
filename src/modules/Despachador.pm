@@ -29,8 +29,10 @@ Tomar proceso de la cola de listos, si el CPU se encuentra LIBRE y asignarle/des
 sub despachar() {
     my ( $self ) = @_;
 
+    # lock($self->{_listos});
+
     if ( $self->{_listos}->pending() > 0 && $self->{_cpu}->estado() eq "LIBRE" ) {
-        my $proceso_ejecucion = $self->{_listos}->dequeue();
+        my $proceso_ejecucion = $self->{_listos}->dequeue_nb();
 
         # print $self->{_listos}->pending()." PROCESOS PARA DESPACHAR ESPERANDO \n";
         # print "DESPACHA PROCESO ".$proceso_ejecucion->proceso_id()." \n";
