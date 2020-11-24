@@ -18,12 +18,12 @@ use Term::ReadKey;
 # Modulos
 use Planificador;
 use Cola;
-use Proceso; # TODO: Proceso Base
+use Proceso;
 use Despachador;
 use Escritor; # TODO: Heredar Proceso
 use Lector; # TODO: Heredar Proceso
 use Db; # TODO: Implementar
-use Cpu; # TODO: Implementar?
+use Cpu;
 use Monitor;
 
 # Colas Planificacion de corto plazo
@@ -143,7 +143,7 @@ sub simular() {
                 my $key;
                 while(not defined ($key = ReadKey(-1))) {
                     $monitor->imprimir_estado_colas($ciclos);
-                    sleep 2;
+                    sleep 2; # TODO: Revisar exclusion mutua?
                 }
             }
             when (3) {
