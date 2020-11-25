@@ -14,9 +14,7 @@ our @ISA = qw(Proceso);    # inherits from Proceso
 
 sub new {
     my $class = shift;
-    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5] );
-
-    $self->{_db}  = undef;
+    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6] );
 
     bless($self, $class);
     return $self;
@@ -25,7 +23,7 @@ sub new {
 
 sub leer_db() {
     my( $self ) = @_;
-    Db->leer_db($self->get_cantidad());
+    $self->get_db()->leer_db($self->get_cantidad());
 }
 
 sub log_proceso() {

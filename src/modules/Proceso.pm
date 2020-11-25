@@ -18,6 +18,7 @@ sub new {
         _proceso_id      => shift,
         _estado          => shift,
         _cantidad        => shift,
+        _db              => shift,
     };
 
     bless $self, $class;
@@ -89,7 +90,16 @@ Devuelve la cantidad a leer / escribir
 
 sub get_cantidad() {
     my ( $self ) = @_;
-    return $self ->cantidad;
+    return $self ->{_cantidad};
+}
+
+=pod
+Devuelve la cantidad a leer / escribir
+=cut
+
+sub get_db() {
+    my ( $self ) = @_;
+    return $self ->{_db};
 }
 
 1;

@@ -28,13 +28,7 @@ my $cola_salida = Cola->new();
 
 # CPU / Base de datos
 my $cpu = Cpu->new($cola_ejecutando);
-
-# Seteo los valores de la DB
-Db->set_nombre_db('DB1');
-Db->set_cantidad_disponible(100000);
-
-my $dba = Db->get_nombre_db();
-my $dba_cant = Db->get_cantidad_disponible();
+my $base_datos = Db->new('Db1', 100000000);
 
 # Planificador / Despachador
 my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cpu);
@@ -50,15 +44,15 @@ my $ciclos = 0;
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->encolar( Escritor->new(2,2, "P0", "NUEVO", 10) );
-    $cola_nuevos->encolar( Lector->new(3,2, "P1", "NUEVO", 40) );
-    $cola_nuevos->encolar( Escritor->new(4,2, "P2", "NUEVO", 60) );
-    $cola_nuevos->encolar( Escritor->new(5,2, "P3", "NUEVO", 80) );
-    $cola_nuevos->encolar( Escritor->new(6,2, "P4", "NUEVO", 100) );
-    $cola_nuevos->encolar( Lector->new(7,2, "P5", "NUEVO", 90) );
-    $cola_nuevos->encolar( Lector->new(10,2, "P6", "NUEVO", 5) );
-    $cola_nuevos->encolar( Lector->new(12,2, "P7", "NUEVO", 40) );
-    $cola_nuevos->encolar( Lector->new(22,2, "P8", "NUEVO", 8) );
+    $cola_nuevos->encolar( Escritor->new(2,2, "P0", "NUEVO", 10, $base_datos) );
+    $cola_nuevos->encolar( Lector->new(3,2, "P1", "NUEVO", 40, $base_datos) );
+    $cola_nuevos->encolar( Escritor->new(4,2, "P2", "NUEVO", 60, $base_datos) );
+    $cola_nuevos->encolar( Escritor->new(5,2, "P3", "NUEVO", 80, $base_datos) );
+    $cola_nuevos->encolar( Escritor->new(6,2, "P4", "NUEVO", 100, $base_datos) );
+    $cola_nuevos->encolar( Lector->new(7,2, "P5", "NUEVO", 90, $base_datos) );
+    $cola_nuevos->encolar( Lector->new(10,2, "P6", "NUEVO", 5, $base_datos) );
+    $cola_nuevos->encolar( Lector->new(12,2, "P7", "NUEVO", 40, $base_datos) );
+    $cola_nuevos->encolar( Lector->new(22,2, "P8", "NUEVO", 8, $base_datos) );
 }
 
 =pod
@@ -68,7 +62,6 @@ sub simular() {
     print "=====================================\n";
     print "== PLANIFICADOR CPU - SIMULADOR 🤖 ===\n";
     print "=====================================\n";
-    printf "\n DB $dba // Instancias: $dba_cant  \n";
 
     while(1) {
         printf "\nCICLO CPU ($ciclos) ⏰  \n";
@@ -77,6 +70,7 @@ sub simular() {
         $planificador->planificar(); # Planifica el siguiente proceso
         $despachador->despachar(); # Despacha al CPU el proceso planificado
         $cpu->ejecutar();
+        $base_datos->print_disponible();
 
         $ciclos = $ciclos + 1;
         # $monitor->imprimir_estado_colas();
