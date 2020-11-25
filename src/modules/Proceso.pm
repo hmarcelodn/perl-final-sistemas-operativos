@@ -13,10 +13,11 @@ sub new {
     my $class = shift;
 
     my $self = {
-        _llegada => shift,
+        _llegada         => shift,
         _tiempo_servicio => shift,
-        _proceso_id => shift,
-        _estado => shift,
+        _proceso_id      => shift,
+        _estado          => shift,
+        _cantidad        => shift,
     };
 
     bless $self, $class;
@@ -80,6 +81,15 @@ sub ejecutar() {
     my ( $self ) = @_;
 
     print "CPU PROCESO $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
+}
+
+=pod
+Devuelve la cantidad a leer / escribir
+=cut
+
+sub get_cantidad() {
+    my ( $self ) = @_;
+    return $self ->cantidad;
 }
 
 1;

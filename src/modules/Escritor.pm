@@ -8,21 +8,25 @@ use warnings;
 =pod
 Representa un proceso Escritor generalizado a partir del paquete Proceso
 =cut
-@ISA = qw( Proceso );
+our @ISA = qw(Proceso);    # inherits from Proceso
 
 sub new {
     my ($class) = @_;
+    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5] );
 
-    my $self = $class -> SUPER::new( $_[1], $_[2], $_[3] );
     bless $self, $class;
-
     return $self
 
 }
 
+sub escribir_db() {
+    my( $self ) = @_;
+    Db->grabar_db($self->get_cantidad());
+}
+
 sub log_proceso() {
     my( $self ) = @_;
-    printf "\nProceso Escritor $self->{$_[3]} arrivado en $self->{$_[1]} \n";
+    printf "\nProceso Lector $self->{$_[3]} arrivado en $self->{_llegada} \n";
 }
 
 
