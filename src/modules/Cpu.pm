@@ -46,12 +46,12 @@ sub cambiar_ocupado() {
 
 # Ejecutar ciclo
 sub ejecutar() {
-    my ( $self ) = @_;
-
+    my ( $self, $dba ) = @_;
     if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
+
         $self->cambiar_ocupado();
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
-        $self->{_proceso}->ejecutar();
+        $self->{_proceso}->ejecutar($dba);
 
         if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
             $self->{_proceso}->cambiar_a_finalizado();

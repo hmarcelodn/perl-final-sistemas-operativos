@@ -50,7 +50,7 @@ sub grabar_db() {
 
 sub print_disponible() {
     my ($self) = @_;
-    print "Disponible en DB: " . $self->{_cantidad_disponible};
+    print " \n DISPONIBLE EN LA DB: " . $self->{_cantidad_disponible} . "\n";
 }
 
 1;

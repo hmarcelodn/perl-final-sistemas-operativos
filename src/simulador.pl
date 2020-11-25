@@ -44,15 +44,15 @@ my $ciclos = 0;
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->encolar( Escritor->new(2,2, "P0", "NUEVO", 10, $base_datos) );
-    $cola_nuevos->encolar( Lector->new(3,2, "P1", "NUEVO", 40, $base_datos) );
-    $cola_nuevos->encolar( Escritor->new(4,2, "P2", "NUEVO", 60, $base_datos) );
-    $cola_nuevos->encolar( Escritor->new(5,2, "P3", "NUEVO", 80, $base_datos) );
-    $cola_nuevos->encolar( Escritor->new(6,2, "P4", "NUEVO", 100, $base_datos) );
-    $cola_nuevos->encolar( Lector->new(7,2, "P5", "NUEVO", 90, $base_datos) );
-    $cola_nuevos->encolar( Lector->new(10,2, "P6", "NUEVO", 5, $base_datos) );
-    $cola_nuevos->encolar( Lector->new(12,2, "P7", "NUEVO", 40, $base_datos) );
-    $cola_nuevos->encolar( Lector->new(22,2, "P8", "NUEVO", 8, $base_datos) );
+    $cola_nuevos->encolar( Escritor->new(2,2, "P0", "NUEVO", 10) );
+    $cola_nuevos->encolar( Lector->new(3,2, "P1", "NUEVO", 40) );
+    $cola_nuevos->encolar( Escritor->new(4,2, "P2", "NUEVO", 60) );
+    $cola_nuevos->encolar( Escritor->new(5,2, "P3", "NUEVO", 80) );
+    $cola_nuevos->encolar( Escritor->new(6,2, "P4", "NUEVO", 100) );
+    $cola_nuevos->encolar( Lector->new(7,2, "P5", "NUEVO", 90) );
+    $cola_nuevos->encolar( Lector->new(10,2, "P6", "NUEVO", 5) );
+    $cola_nuevos->encolar( Lector->new(12,2, "P7", "NUEVO", 40) );
+    $cola_nuevos->encolar( Lector->new(22,2, "P8", "NUEVO", 8) );
 }
 
 =pod
@@ -69,7 +69,7 @@ sub simular() {
         $planificador->actualizar_ciclos($ciclos);
         $planificador->planificar(); # Planifica el siguiente proceso
         $despachador->despachar(); # Despacha al CPU el proceso planificado
-        $cpu->ejecutar();
+        $cpu->ejecutar($base_datos);
         $base_datos->print_disponible();
 
         $ciclos = $ciclos + 1;

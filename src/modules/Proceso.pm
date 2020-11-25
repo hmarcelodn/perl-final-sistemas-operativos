@@ -18,7 +18,6 @@ sub new {
         _proceso_id      => shift,
         _estado          => shift,
         _cantidad        => shift,
-        _db              => shift,
     };
 
     bless $self, $class;
@@ -76,15 +75,6 @@ sub cambiar_a_finalizado() {
 }
 
 =pod
-Ejecuta comportamiento de proceso
-=cut
-sub ejecutar() {
-    my ( $self ) = @_;
-
-    print "CPU PROCESO $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
-}
-
-=pod
 Devuelve la cantidad a leer / escribir
 =cut
 
@@ -93,13 +83,5 @@ sub get_cantidad() {
     return $self ->{_cantidad};
 }
 
-=pod
-Devuelve la cantidad a leer / escribir
-=cut
-
-sub get_db() {
-    my ( $self ) = @_;
-    return $self ->{_db};
-}
 
 1;
