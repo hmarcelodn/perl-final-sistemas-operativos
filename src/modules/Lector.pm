@@ -26,7 +26,10 @@ Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-    $dba->{_cantidad_disponible} -= $self->{_cantidad};
+    $dba->down_recursos($self->{_cantidad});
+    sleep 2;
+    $dba->leer_db($self->{_cantidad});
+    $dba->up_recursos($self->{_cantidad});
     print "CPU PROCESO LECTOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
 }
 

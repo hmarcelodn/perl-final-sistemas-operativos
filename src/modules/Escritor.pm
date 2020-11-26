@@ -13,7 +13,6 @@ our @ISA = qw(Proceso);    # inherits from Proceso
 sub new {
     my ($class) = @_;
     my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5] );
-    print $self->get_cantidad() . "En constructor";
 
     bless $self, $class;
     return $self
@@ -25,7 +24,10 @@ Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-    $dba->{_cantidad_disponible} += $self->{_cantidad};
+    $dba->bloquear_escritura();
+    sleep 2;
+    $dba->grabar_db($self->{_cantidad});
+    $dba->habilitar_escritura();
     print "CPU PROCESO ESCRITOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
 }
 

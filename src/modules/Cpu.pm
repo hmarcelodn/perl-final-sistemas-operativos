@@ -12,7 +12,8 @@ sub new {
     my $class = shift;
     my $self = {
         _proceso => undef,
-        _estado => "LIBRE"
+        _estado => "LIBRE",
+        _ciclos => 0,
     };
 
     bless $self, $class;
@@ -47,8 +48,8 @@ sub cambiar_ocupado() {
 # Ejecutar ciclo
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-    if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
 
+    if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
         $self->cambiar_ocupado();
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
         $self->{_proceso}->ejecutar($dba);
@@ -58,7 +59,7 @@ sub ejecutar() {
             $self->cambiar_libre();
         }
     } else {
-        print "CPU OCIOSO \n";
+        # print "CPU OCIOSO \n";
     }
 }
 
