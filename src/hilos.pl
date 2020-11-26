@@ -1,39 +1,35 @@
-use strict;
-use warnings;
-
 use threads;
-use Thread::Queue;
+use Thread::Semaphore;
 
-my $q = Thread::Queue->new();    # A new empty queue
-my $q2 = Thread::Queue->new();
+my $cpu_semaforo = Thread::Semaphore->new();
+my $monitor_semaforo = Thread::Semaphore->new();
 
-# Worker thread
-my $thr = threads->create(
-    sub {
-        print "Hilo \n";
-        # Thread will loop until no more work
-        while (defined(my $item = $q->dequeue())) {
-            print $item;
-            $q2->enqueue($item);
-            sleep 5;
-        }
+$cpu_semaforo->down();
+
+# PROCESADOR
+my $th1 = threads->create(sub {
+    while(1) {
+        # $monitor_semaforo->down();
+        $cpu_semaforo->down(); # 1
+
+        print "HILO 2 \n";
+        sleep 3;
+
+        $monitor_semaforo->up();
+        # $cpu_semaforo->up();
     }
-);
+});
 
-$q->enqueue(1);
-$q->enqueue(2);
-$q->enqueue(3);
-$q->enqueue(4);
-$q->end();
+# MONITOR
+while(1) {
+    # $cpu_semaforo->down();
+    $monitor_semaforo->down(); # 0
 
-$thr->detach();
-
-while (1) {
-    print "q1: ";
-    print $q->pending();
-    print "\n";
-    print "q2: ";
-    print $q2->pending();
-    print "\n";
+    print "HILO 1 \n";
     sleep 2;
+
+    # $monitor_semaforo->up();
+    $cpu_semaforo->up(); # 1
 }
+
+$th1->detach();

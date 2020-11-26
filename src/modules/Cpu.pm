@@ -58,8 +58,6 @@ sub ejecutar() {
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
         }
-    } else {
-        # print "CPU OCIOSO \n";
     }
 }
 

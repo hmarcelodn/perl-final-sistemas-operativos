@@ -25,10 +25,6 @@ Imprimir reporte de estado de colas
 =cut
 sub imprimir_estado_colas() {
     my ( $self, $ciclos ) = @_;
-
-    # lock($self->{_listos});
-    # lock($self->{_nuevos});
-
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
 
