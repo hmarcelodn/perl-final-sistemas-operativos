@@ -53,11 +53,11 @@ my $ciclos :shared = 0;
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Escritor->new(2, 2, "P0", "NUEVO", 10) );
-    $cola_nuevos->enqueue( Escritor->new(3, 2, "P1", "NUEVO", 40) );
-    $cola_nuevos->enqueue( Escritor->new(4,2, "P2", "NUEVO", 60) );
-    $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
-    $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
+    # $cola_nuevos->enqueue( Escritor->new(2, 2, "P0", "NUEVO", 10) );
+    # $cola_nuevos->enqueue( Escritor->new(3, 2, "P1", "NUEVO", 40) );
+    # $cola_nuevos->enqueue( Escritor->new(4,2, "P2", "NUEVO", 60) );
+    # $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
+    # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
     $cola_nuevos->enqueue( Lector->new(7,2, "P5", "NUEVO", 90) );
     $cola_nuevos->enqueue( Lector->new(10,2, "P6", "NUEVO", 5) );
     $cola_nuevos->enqueue( Lector->new(12,2, "P7", "NUEVO", 40) );

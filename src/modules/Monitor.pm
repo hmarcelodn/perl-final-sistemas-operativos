@@ -2,6 +2,7 @@ package Monitor;
 
 # use strict;
 use warnings;
+use Term::ANSIColor;
 
 =pod
 Abstraccion que permite visualizar el estado de las colas en todo momento
@@ -24,11 +25,7 @@ sub new() {
 Imprimir reporte de estado de colas
 =cut
 sub imprimir_estado_colas() {
-    my ( $self, $ciclos ) = @_;
-
-    # lock($self->{_listos});
-    # lock($self->{_nuevos});
-
+    my ( $self, $ciclos, $proceso_id, $estado_cpu ) = @_;
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
 
@@ -39,7 +36,9 @@ sub imprimir_estado_colas() {
     print "===================================================================\n\n";
     print "+ CPU CICLO ⏰ : ".$ciclos." \n";
     print "+ PROCESOS NUEVOS: ".$procesos_nuevos_pendientes." \n";
-    print "+ PROCESOS LISTOS: ".$procesos_listos_pendientes." \n\n";
+    print "+ PROCESOS LISTOS: ".$procesos_listos_pendientes." \n";
+    print "+ ESTADO DEL PROCESADOR: ".$estado_cpu." \n";
+    print "+ ULTIMO PROCESO EN EJECUCION: ".$proceso_id." \n\n";
     print "-----------------------------------\n";
     print "COLA: LISTOS\n";
     print "-----------------------------------\n";
@@ -79,7 +78,7 @@ sub imprimir_estado_colas() {
         print "-----------------------------------\n";
     }
 
-    print "\n\n Presione Enter para salir...";
+    print "\n\n Presione Enter para salir... \n\n";
 }
 
 1;

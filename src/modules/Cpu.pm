@@ -48,7 +48,6 @@ sub cambiar_ocupado() {
 # Ejecutar ciclo
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-
     if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
         $self->cambiar_ocupado();
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
