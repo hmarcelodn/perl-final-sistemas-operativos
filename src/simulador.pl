@@ -14,8 +14,6 @@ use Thread::Semaphore;
 use feature qw(switch);
 use Term::ReadKey;
 
-# threads->exit();
-
 # Modulos
 use Planificador;
 use Cola;
