@@ -12,12 +12,23 @@ sub new {
     my $class = shift;
     my $self = {
         _proceso => undef,
-        _estado => "LIBRE"
+        _estado => "LIBRE",
+        _ciclos => 0,
     };
 
     bless $self, $class;
 
     return $self
+}
+
+sub proceso_asignado() {
+    my ( $self ) = @_;
+
+    if ( $self->{_proceso} ) {
+        return $self->{_proceso}->proceso_id();
+    }
+
+    return "NINGUNO";
 }
 
 # Utilizado por el dispatcher para asignar al CPU un nuevo proceso
@@ -56,9 +67,8 @@ sub ejecutar() {
         if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
+            $self->{_proceso} = undef;
         }
-    } else {
-        print "CPU OCIOSO \n";
     }
 }
 
