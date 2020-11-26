@@ -54,7 +54,6 @@ my $modo_monitor :shared = 0;
 # Semaforos del Planificador
 my $cpu_semaforo = Thread::Semaphore->new();
 my $monitor_semaforo = Thread::Semaphore->new();
-my $monitor_semaforo_2 = Thread::Semaphore->new();
 
 # Primero monitorea, luego cicla el CPU
 $cpu_semaforo->down();
