@@ -2,6 +2,7 @@ package Monitor;
 
 # use strict;
 use warnings;
+use Term::ANSIColor;
 
 =pod
 Abstraccion que permite visualizar el estado de las colas en todo momento
@@ -77,7 +78,7 @@ sub imprimir_estado_colas() {
         print "-----------------------------------\n";
     }
 
-    # print "\n\n Presione Enter para salir...";
+    print "\n\n Presione Enter para salir... \n\n";
 }
 
 1;

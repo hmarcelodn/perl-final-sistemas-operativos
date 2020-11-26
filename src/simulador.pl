@@ -13,6 +13,7 @@ use Thread::Queue;
 use Thread::Semaphore;
 use feature qw(switch);
 use Term::ReadKey;
+use Term::ANSIColor;
 
 # Modulos
 use Planificador;
@@ -80,6 +81,8 @@ Subrutina para simular ciclos de CPU
 sub simular() {
     # Auto flush de STDOUT
     $| = 1;
+
+    print color('bold green');
 
     # Hilo 1 - Simulador
     my $simulacion_hilo = threads->create(sub {
