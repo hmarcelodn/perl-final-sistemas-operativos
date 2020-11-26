@@ -46,7 +46,10 @@ my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_s
 
 # Reloj CPU
 my $ciclos :shared = 0;
+my $cpu_estado :shared = "";
+my $cpu_proceso_id :shared = "";
 
+# Modo Monitor Activo
 my $modo_monitor :shared = 0;
 
 # Semaforos del Planificador
@@ -60,15 +63,15 @@ $cpu_semaforo->down();
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Proceso->new(2, 2, "P0", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(3, 2, "P1", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(4,2, "P2", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(5,2, "P3", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(6,2, "P4", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(7,2, "P5", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(10,2, "P6", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(12,2, "P7", "NUEVO") );
-    $cola_nuevos->enqueue( Proceso->new(22,2, "P8", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(2, 3, "P0", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(3, 3, "P1", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(4, 3, "P2", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(5, 3, "P3", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(6, 3, "P4", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(7, 3, "P5", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(10, 3, "P6", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(12, 3, "P7", "NUEVO") );
+    $cola_nuevos->enqueue( Proceso->new(22, 3, "P8", "NUEVO") );
 }
 
 =pod
@@ -98,6 +101,9 @@ sub simular() {
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
 
+            $cpu_estado = $cpu->estado();
+            $cpu_proceso_id = $cpu->proceso_asignado();
+
             # Permitir monitorear luego de despachar
             $monitor_semaforo->up();
         }
@@ -112,7 +118,7 @@ sub simular() {
             $monitor_semaforo->down();
 
             if ($modo_monitor == 1) {
-                $monitor->imprimir_estado_colas($ciclos);
+                $monitor->imprimir_estado_colas( $ciclos, $cpu_proceso_id, $cpu_estado );
             }
 
             # Permitir al CPU ejecutar la cola de listos
@@ -122,7 +128,7 @@ sub simular() {
             $monitor_semaforo->down();
 
             if ($modo_monitor == 1) {
-                $monitor->imprimir_estado_colas($ciclos);
+                $monitor->imprimir_estado_colas( $ciclos, $cpu_proceso_id, $cpu_estado );
             }
 
             # Pausa para visualizar
