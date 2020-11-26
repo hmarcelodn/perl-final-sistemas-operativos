@@ -47,12 +47,12 @@ sub get_cantidad_disponible() {
 
 sub leer_db() {
     my ($self, $value) = @_;
-    print "Leer : Mutex Grabar: $mutex_grabar, Cantidad Disponible: $self->{_cantidad_disponible} - $value, Interrupcion:  $mutex_interrupcion";
+    # print "Leer : Mutex Grabar: $mutex_grabar, Interrupcion:  $mutex_interrupcion";
     if( $mutex_grabar == 0 && $mutex_interrupcion == 0) {
         $self->{_cantidad_disponible} -= $value;
-        print "\n Lei $value \n";
+        # print "\n Lei $value \n";
     } else {
-        print "\n No pude Leer \n";
+        # print "\n No pude Leer \n";
     }
 }
 
@@ -61,21 +61,20 @@ sub grabar_db() {
     print "Grabar : Mutex Grabar: $mutex_grabar, Cantidad Recursos: $cantidad_recursos";
 
     if( $mutex_grabar == 0 && $cantidad_recursos > 0 ) {
-        $self->{_cantidad_disponible} += $value;
+        $cantidad_recursos += $value;
         print "\n Grabe $value \n";
-
     } else {
         print "\n No pude grabar \n";
     }
 }
 
 sub bloquear_escritura() {
-    $mutex_grabar = 0;
+    $mutex_grabar = 1;
 }
 
 sub habilitar_escritura() {
-    $mutex_grabar = 1;
-    $mutex_interrupcion = 1;
+    $mutex_grabar = 0;
+    $mutex_interrupcion = 0;
 }
 
 sub down_recursos() {
@@ -94,7 +93,7 @@ sub up_recursos() {
 
 sub print_disponible() {
     my ($self) = @_;
-    print " \n DISPONIBLE EN LA DB: " . $self->{_cantidad_disponible} . "\n";
+    print " \n DISPONIBLE EN LA DB: " . $cantidad_recursos . "\n";
 }
 
 1;

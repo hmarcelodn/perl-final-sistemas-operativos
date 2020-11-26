@@ -23,9 +23,9 @@ sub new {
 Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
+    print "Ejecutar escritura";
     my ( $self, $dba ) = @_;
     $dba->bloquear_escritura();
-    sleep 2;
     $dba->grabar_db($self->{_cantidad});
     $dba->habilitar_escritura();
     print "CPU PROCESO ESCRITOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";

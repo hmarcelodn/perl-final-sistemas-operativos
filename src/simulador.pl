@@ -65,15 +65,15 @@ $cpu_semaforo->down();
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    # $cola_nuevos->enqueue( Escritor->new(2, 2, "P0", "NUEVO", 10) );
-    # $cola_nuevos->enqueue( Escritor->new(3, 2, "P1", "NUEVO", 40) );
-    # $cola_nuevos->enqueue( Escritor->new(4,2, "P2", "NUEVO", 60) );
-    # $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
-    # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
-    $cola_nuevos->enqueue( Lector->new(7,2, "P5", "NUEVO", 90) );
-    $cola_nuevos->enqueue( Lector->new(10,2, "P6", "NUEVO", 5) );
-    $cola_nuevos->enqueue( Lector->new(12,2, "P7", "NUEVO", 40) );
-    $cola_nuevos->enqueue( Lector->new(22,2, "P8", "NUEVO", 8) );
+    $cola_nuevos->enqueue( Lector->new(2,2, "P0", "NUEVO", 90) );
+    $cola_nuevos->enqueue( Lector->new(2,2, "P1", "NUEVO", 5) );
+    $cola_nuevos->enqueue( Escritor->new(3, 2, "P2", "NUEVO", 10) );
+    $cola_nuevos->enqueue( Escritor->new(3, 2, "P3", "NUEVO", 40) );
+    $cola_nuevos->enqueue( Escritor->new(4,2, "P2", "NUEVO", 60) );
+    $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
+    $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
+    $cola_nuevos->enqueue( Lector->new(12,5, "P4", "NUEVO", 40) );
+    $cola_nuevos->enqueue( Lector->new(22,5, "P5", "NUEVO", 8) );
 }
 
 =pod
@@ -101,7 +101,6 @@ sub simular() {
             $cpu_semaforo->down();
             $despachador->despachar();
             $cpu->ejecutar($base_datos);
-            $base_datos->print_disponible();
 
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
@@ -137,7 +136,7 @@ sub simular() {
             }
 
             # Pausa para visualizar
-            sleep 1;
+            sleep 5;
 
             # Permitir al CPU continuar su procesamiento
             $cpu_semaforo->up();
@@ -177,6 +176,11 @@ sub simular() {
                 my $nuevo_proceso_pid;
                 my $nuevo_proceso_llegada;
                 my $nuevo_proceso_servicio;
+                my $nuevo_proceso_tipo;
+
+                print "INGRESAR TIPO PROCESO: L / E";
+                $nuevo_proceso_tipo = <STDIN>;
+                chomp $nuevo_proceso_tipo;
 
                 print "INGRESAR PID: ";
                 $nuevo_proceso_pid = <STDIN>;
@@ -190,7 +194,11 @@ sub simular() {
                 $nuevo_proceso_servicio = <STDIN>;
                 chomp $nuevo_proceso_servicio;
 
-                $cola_nuevos->enqueue( Proceso->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+                if( $nuevo_proceso_tipo == 'L') {
+                    $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+                } else {
+                    $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+                }
                 print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
             }
             when (2) {
