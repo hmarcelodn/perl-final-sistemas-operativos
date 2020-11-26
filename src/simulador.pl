@@ -10,6 +10,7 @@ use warnings;
 use threads;
 use threads::shared;
 use Thread::Queue;
+use Thread::Semaphore;
 use feature qw(switch);
 use Term::ReadKey;
 
@@ -48,6 +49,16 @@ my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_s
 # Reloj CPU
 my $ciclos :shared = 0;
 
+my $modo_monitor :shared = 0;
+
+# Semaforos del Planificador
+my $cpu_semaforo = Thread::Semaphore->new();
+my $monitor_semaforo = Thread::Semaphore->new();
+my $monitor_semaforo_2 = Thread::Semaphore->new();
+
+# Primero monitorea, luego cicla el CPU
+$cpu_semaforo->down();
+
 =pod
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
@@ -70,30 +81,65 @@ sub simular() {
     # Auto flush de STDOUT
     $| = 1;
 
-    # Thread 1 - Simulador
+    # Hilo 1 - Simulador
     my $simulacion_hilo = threads->create(sub {
         while(1) {
-            # print "\nCICLO CPU ($ciclos) ⏰  \n";
+            # Permitir ciclos de CPU
+            $cpu_semaforo->down();
 
             $planificador->actualizar_ciclos($ciclos); # Actualizar los ciclos del planificador
             $planificador->planificar(); # Planifica el siguiente proceso
 
-            # $monitor->imprimir_estado_colas($ciclos); # Mostrar colas antes de procesar
-            sleep 2;
+            # Permitir monitorear luego de planificar
+            $monitor_semaforo->up();
 
+            # Permitir despachar y ejecutar
+            $cpu_semaforo->down();
             $despachador->despachar();
             $cpu->ejecutar();
-            # $monitor->imprimir_estado_colas($ciclos); # Mostrar colas despues de procesar
 
+            # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
+
+            # Permitir monitorear luego de despachar
+            $monitor_semaforo->up();
         }
     });
 
     $simulacion_hilo->detach();
 
-    # TODO: Consola interactiva con usuario
+    # Hilo 2 - Monitor Activo Sincronizado
+    my $simulacion_monitor = threads->create(sub {
+        while (1) {
+            # Monitorear colas antes de ejecutar
+            $monitor_semaforo->down();
+
+            if ($modo_monitor == 1) {
+                $monitor->imprimir_estado_colas($ciclos);
+            }
+
+            # Permitir al CPU ejecutar la cola de listos
+            $cpu_semaforo->up();
+
+            # Monitorear colas despues de ejecutar
+            $monitor_semaforo->down();
+
+            if ($modo_monitor == 1) {
+                $monitor->imprimir_estado_colas($ciclos);
+            }
+
+            # Pausa para visualizar
+            sleep 1;
+
+            # Permitir al CPU continuar su procesamiento
+            $cpu_semaforo->up();
+        }
+    });
+
+    $simulacion_monitor->detach();
+
+    # Hilo 3 - Interaccion principal
     while(1) {
-        # $monitor->imprimir_estado_colas($ciclos);
         system("clear");
         print "=====================================\n";
         print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
@@ -141,10 +187,12 @@ sub simular() {
             }
             when (2) {
                 my $key;
-                while(not defined ($key = ReadKey(-1))) {
-                    $monitor->imprimir_estado_colas($ciclos);
-                    sleep 2; # TODO: Revisar exclusion mutua?
-                }
+                $modo_monitor = 1;
+
+                # Mientras no se presione una tecla, mantener el modo monitor
+                while(not defined ($key = ReadKey(-1))) {}
+
+                $modo_monitor = 0;
             }
             when (3) {
                 print "SALIR \n";
@@ -154,8 +202,6 @@ sub simular() {
                 print 0;
             }
         }
-
-        sleep 1;
     }
 }
 
