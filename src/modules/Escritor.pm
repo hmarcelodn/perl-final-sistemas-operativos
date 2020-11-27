@@ -15,8 +15,8 @@ sub new {
     my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5] );
 
     bless $self, $class;
-    return $self
 
+    return $self
 }
 
 =pod
@@ -25,7 +25,6 @@ Ejecuta comportamiento de proceso
 sub ejecutar() {
     my ( $self, $dba ) = @_;
     $dba->grabar_db($self->{_cantidad});
-    # print "CPU PROCESO ESCRITOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
 }
 
 1;

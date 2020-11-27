@@ -59,15 +59,10 @@ sub cambiar_ocupado() {
 sub ejecutar() {
     my ( $self, $dba ) = @_;
 
-    # print "EJECUTANDOtest \n";
-    # print $self->{_proceso};
-
     if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
         $self->cambiar_ocupado();
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
         $self->{_proceso}->ejecutar($dba);
-
-        # print "EJECUTANDO \n";
 
         if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
             $self->{_proceso}->cambiar_a_finalizado();

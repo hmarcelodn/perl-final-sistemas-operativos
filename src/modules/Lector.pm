@@ -15,8 +15,8 @@ sub new {
     my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5] );
 
     bless $self, $class;
-    return $self
 
+    return $self
 }
 
 =pod
