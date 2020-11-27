@@ -117,6 +117,12 @@ sub simular() {
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
 
+            my $test1 = $cola_procesadores->peek(0)->estado();
+            my $test2 = $cola_procesadores->peek(1)->estado();
+
+            print "\n Estado PROC 1: $test1 \n";
+            print "\n Estado PROC 2: $test2 \n";
+
             $cpu_estado = $cola_procesadores->peek(1)->estado();
             $cpu_proceso_id = $cola_procesadores->peek(1)->proceso_asignado();
 
@@ -160,6 +166,10 @@ sub simular() {
     # Hilo 3 - Interaccion principal
     while(1) {
         system("clear");
+        my @threads = threads->list();
+        my @running = threads->list(threads::running);
+        my @joinable = threads->list(threads::joinable);
+        print "Using threads.pm version $threads::VERSION\n";
         print "=====================================\n";
         print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
         print "=====================================\n";
