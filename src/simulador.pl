@@ -38,7 +38,6 @@ my $cola_salida = Thread::Queue->new();
 # CPU / Base de datos
 my $cpu_1 = Cpu->new($cola_ejecutando);
 my $cpu_2 = Cpu->new($cola_ejecutando);
-my $base_datos = Db->new('Db1', 100000000);
 
 my $cola_procesadores = Thread::Queue->new();
 $cola_procesadores->enqueue( $cpu_1 );
@@ -71,11 +70,13 @@ Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
     # $cola_nuevos->enqueue( Lector->new(2, 2, "P0", "NUEVO", 90) ); # Termina en 4
-    $cola_nuevos->enqueue( Lector->new(1, 2, "P1", "NUEVO", 5) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Escritor->new(1, 2, "P2", "NUEVO", 10) ); # Empieza en 6 y termina en 8
-    $cola_nuevos->enqueue( Escritor->new(3, 2, "P3", "NUEVO", 40) );
-    $cola_nuevos->enqueue( Escritor->new(3, 5, "P2", "NUEVO", 60) );
-    # $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
+    $cola_nuevos->enqueue( Lector->new(1, 3, "P1", "NUEVO", 5) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Lector->new(2, 5, "P1", "NUEVO", 6) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Escritor->new(3, 1, "P2", "NUEVO", 8) ); # Empieza en 6 y termina en 8
+    $cola_nuevos->enqueue( Lector->new(2, 3, "P1", "NUEVO", 7) ); # Empieza en 4 y termina en 6
+    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 40) );
+    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P4", "NUEVO", 60) );
+    # $cola_nuevos->enqueue( Lector->new(4,1, "P5", "NUEVO", 80) );
     # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
     # $cola_nuevos->enqueue( Lector->new(12,5, "P4", "NUEVO", 40) );
     # $cola_nuevos->enqueue( Lector->new(22,5, "P5", "NUEVO", 8) );
@@ -92,6 +93,9 @@ sub simular() {
 
     # Hilo 1 - Simulador
     my $simulacion_hilo = threads->create(sub {
+        # Creo instancia de DB
+        my $base_datos = Db->new('Db1', 100000000);
+
         while(1) {
             # Permitir ciclos de CPU
             $cpu_semaforo->down();

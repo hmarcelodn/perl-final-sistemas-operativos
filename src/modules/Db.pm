@@ -5,21 +5,19 @@ package Db;
 use strict;
 use warnings;
 
-my $mutex_interrupcion :shared = 0;
-my $mutex_grabar :shared = 0;
-my $cantidad_recursos :shared = 0;
-my $cant_lect :shared = 0;
-
+my $contador_lectores :shared = 0;
+my $escribir_mutex = Thread::Semaphore->new();
+my $sumar_mutex = Thread::Semaphore->new();
 
 sub new {
     my $class = shift;
 
     my $self = {
-        _nombre_db => shift,
+        _nombre_db           => shift,
         _cantidad_disponible => shift,
+        _escribir_mutex      => shift,
+        _sumar_mutex         => shift,
     };
-
-    $cantidad_recursos = $self->{_cantidad_disponible};
 
     bless $self, $class;
     return $self
@@ -35,11 +33,6 @@ sub get_nombre_db() {
     return $self->{_nombre_db};
 }
 
-sub set_cantidad_disponible() {
-    my ($self, $value) = @_;
-    $self->{_cantidad_disponible} = $value;
-}
-
 sub get_cantidad_disponible() {
     my ($self) = @_;
     return $self->{_cantidad_disponible};
@@ -47,53 +40,42 @@ sub get_cantidad_disponible() {
 
 sub leer_db() {
     my ($self, $value) = @_;
-    # print "Leer : Mutex Grabar: $mutex_grabar, Interrupcion:  $mutex_interrupcion";
-    if( $mutex_grabar == 0 && $mutex_interrupcion == 0) {
-        $self->{_cantidad_disponible} -= $value;
-        # print "\n Lei $value \n";
-    } else {
-        # print "\n No pude Leer \n";
+    $sumar_mutex->down();
+    $contador_lectores = $contador_lectores + 1;
+
+    if($contador_lectores == 1) {
+        $escribir_mutex->down();
     }
+    $sumar_mutex->up();
+
+    print "\n Lei $value de $self->{_cantidad_disponible} \n";
+    sleep 3;
+
+    $sumar_mutex->down();
+
+    $contador_lectores = $contador_lectores -1;
+    if($contador_lectores == 0) {
+        $escribir_mutex->up();
+    }
+
+    $sumar_mutex->up();
 }
 
 sub grabar_db() {
     my ($self, $value) = @_;
-    print "Grabar : Mutex Grabar: $mutex_grabar, Cantidad Recursos: $cantidad_recursos";
+    $escribir_mutex->down();
 
-    if( $mutex_grabar == 0 && $cantidad_recursos > 0 ) {
-        $cantidad_recursos += $value;
-        print "\n Grabe $value \n";
-    } else {
-        print "\n No pude grabar \n";
-    }
-}
+    print "\n Estoy Escribiendo $value en $self->{_cantidad_disponible} \n";
+    sleep 3;
+    $self->{_cantidad_disponible} += $value;
 
-sub bloquear_escritura() {
-    $mutex_grabar = 1;
-}
+    $escribir_mutex->up();
 
-sub habilitar_escritura() {
-    $mutex_grabar = 0;
-    $mutex_interrupcion = 0;
-}
-
-sub down_recursos() {
-    my ($cant) = @_;
-
-    $cant_lect +=1;
-    $cantidad_recursos -= $cant;
-}
-
-sub up_recursos() {
-    my ($cant) = @_;
-
-    $cant_lect -=1;
-    $cantidad_recursos += $cant;
 }
 
 sub print_disponible() {
     my ($self) = @_;
-    print " \n DISPONIBLE EN LA DB: " . $cantidad_recursos . "\n";
+    print " \n DISPONIBLE EN LA DB: " . $self->{_cantidad_disponible} . "\n";
 }
 
 1;
