@@ -4,10 +4,11 @@ package Db;
 
 use strict;
 use warnings;
+use Semaforo;
 
 my $contador_lectores :shared = 0;
-my $escribir_mutex = Thread::Semaphore->new();
-my $sumar_mutex = Thread::Semaphore->new();
+my $escribir_mutex = Semaforo->new('contador_lectores', 1);
+my $sumar_mutex = Semaforo->new('sumar_mutex', 1);;
 
 sub new {
     my $class = shift;
@@ -39,19 +40,19 @@ sub get_cantidad_disponible() {
 }
 
 sub leer_db() {
-    my ($self, $value) = @_;
-    $sumar_mutex->down();
+    my ($self, $proceso) = @_;
+    $sumar_mutex->down($proceso);
     $contador_lectores = $contador_lectores + 1;
 
     if($contador_lectores == 1) {
-        $escribir_mutex->down();
+        $escribir_mutex->down($proceso);
     }
     $sumar_mutex->up();
 
-    print "\n Lei $value de $self->{_cantidad_disponible} \n";
+    print "\n Lei $proceso->{_cantidad} de $self->{_cantidad_disponible} \n";
     sleep 3;
 
-    $sumar_mutex->down();
+    $sumar_mutex->down($proceso);
 
     $contador_lectores = $contador_lectores -1;
     if($contador_lectores == 0) {
@@ -62,12 +63,12 @@ sub leer_db() {
 }
 
 sub grabar_db() {
-    my ($self, $value) = @_;
-    $escribir_mutex->down();
+    my ($self, $proceso) = @_;
+    $escribir_mutex->down($proceso);
 
-    print "\n Estoy Escribiendo $value en $self->{_cantidad_disponible} \n";
+    print "\n Estoy Escribiendo $proceso->{_cantidad} en $self->{_cantidad_disponible} \n";
     sleep 3;
-    $self->{_cantidad_disponible} += $value;
+    $self->{_cantidad_disponible} += $proceso->{_cantidad};
 
     $escribir_mutex->up();
 
