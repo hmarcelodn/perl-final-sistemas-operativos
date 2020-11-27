@@ -24,11 +24,11 @@ Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-    # print "Ejecutar lectura";
+    print "Ejecutar lectura";
     $dba->down_recursos($self->{_cantidad});
     $dba->leer_db($self->{_cantidad});
     $dba->up_recursos($self->{_cantidad});
-    # print "CPU PROCESO LECTOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
+    print "CPU PROCESO LECTOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
 }
 
 sub log_proceso() {

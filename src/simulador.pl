@@ -36,12 +36,17 @@ my $cola_nuevos = Thread::Queue->new();
 my $cola_salida = Thread::Queue->new();
 
 # CPU / Base de datos
-my $cpu = Cpu->new($cola_ejecutando);
+my $cpu_1 = Cpu->new($cola_ejecutando);
+my $cpu_2 = Cpu->new($cola_ejecutando);
 my $base_datos = Db->new('Db1', 100000000);
 
+my $cola_procesadores = Thread::Queue->new();
+$cola_procesadores->enqueue( $cpu_1 );
+$cola_procesadores->enqueue( $cpu_2 );
+
 # Planificador / Despachador
-my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cpu);
-my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cpu);
+my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
+my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_procesadores);
 
 # Instancia del monitor
 my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
@@ -65,15 +70,15 @@ $cpu_semaforo->down();
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Lector->new(2,2, "P0", "NUEVO", 90) );
-    $cola_nuevos->enqueue( Lector->new(2,2, "P1", "NUEVO", 5) );
-    $cola_nuevos->enqueue( Escritor->new(3, 2, "P2", "NUEVO", 10) );
+    # $cola_nuevos->enqueue( Lector->new(2, 2, "P0", "NUEVO", 90) ); # Termina en 4
+    $cola_nuevos->enqueue( Lector->new(1, 2, "P1", "NUEVO", 5) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Escritor->new(1, 2, "P2", "NUEVO", 10) ); # Empieza en 6 y termina en 8
     $cola_nuevos->enqueue( Escritor->new(3, 2, "P3", "NUEVO", 40) );
-    $cola_nuevos->enqueue( Escritor->new(4,2, "P2", "NUEVO", 60) );
-    $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
-    $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
-    $cola_nuevos->enqueue( Lector->new(12,5, "P4", "NUEVO", 40) );
-    $cola_nuevos->enqueue( Lector->new(22,5, "P5", "NUEVO", 8) );
+    $cola_nuevos->enqueue( Escritor->new(3, 5, "P2", "NUEVO", 60) );
+    # $cola_nuevos->enqueue( Escritor->new(5,2, "P3", "NUEVO", 80) );
+    # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
+    # $cola_nuevos->enqueue( Lector->new(12,5, "P4", "NUEVO", 40) );
+    # $cola_nuevos->enqueue( Lector->new(22,5, "P5", "NUEVO", 8) );
 }
 
 =pod
@@ -100,13 +105,16 @@ sub simular() {
             # Permitir despachar y ejecutar
             $cpu_semaforo->down();
             $despachador->despachar();
-            $cpu->ejecutar($base_datos);
+
+            # Me obliga a correr 2 procesos a la vez, por ej, E/L
+            $cola_procesadores->peek(0)->ejecutar($base_datos);
+            $cola_procesadores->peek(1)->ejecutar($base_datos);
 
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
 
-            $cpu_estado = $cpu->estado();
-            $cpu_proceso_id = $cpu->proceso_asignado();
+            $cpu_estado = $cola_procesadores->peek(1)->estado();
+            $cpu_proceso_id = $cola_procesadores->peek(1)->proceso_asignado();
 
             # Permitir monitorear luego de despachar
             $monitor_semaforo->up();
@@ -136,7 +144,7 @@ sub simular() {
             }
 
             # Pausa para visualizar
-            sleep 5;
+            sleep 2;
 
             # Permitir al CPU continuar su procesamiento
             $cpu_semaforo->up();
