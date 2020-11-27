@@ -21,15 +21,18 @@ use Planificador;
 use Cola;
 use Proceso;
 use Despachador;
-use Escritor; # TODO: Heredar Proceso
-use Lector; # TODO: Heredar Proceso
-use Db; # TODO: Implementar
+use Escritor;
+use Lector;
+use Db;
 use Cpu;
 use Monitor;
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Thread::Queue->new();
 my $cola_ejecutando = Thread::Queue->new();
+
+# Colas Planificacion de mediano plazo
+my $cola_bloqueados = Thread::Queue->new();
 
 # Colas Planificacion de largo plazo
 my $cola_nuevos = Thread::Queue->new();
@@ -200,7 +203,7 @@ sub simular() {
                 my $nuevo_proceso_servicio;
                 my $nuevo_proceso_tipo;
 
-                print "INGRESAR TIPO PROCESO: L / E";
+                print "INGRESAR TIPO PROCESO L (LECTOR) / E (ESCRITOR): ";
                 $nuevo_proceso_tipo = <STDIN>;
                 chomp $nuevo_proceso_tipo;
 
