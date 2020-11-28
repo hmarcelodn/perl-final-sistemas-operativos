@@ -196,7 +196,7 @@ sub simular() {
 
     # Hilo 3 - Interaccion principal
     while(1) {
-        # system("clear");
+        system("clear");
         print "Using threads.pm version $threads::VERSION\n";
         print "=====================================\n";
         print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";

@@ -29,7 +29,7 @@ sub imprimir_estado_colas() {
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
 
-    # system("clear");
+    system("clear");
 
     print "===================================================================\n";
     print "MONITOREANDO COLAS DE PLANIFICACION (presione Enter para salir...) \n";
