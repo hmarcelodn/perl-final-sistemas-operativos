@@ -22,35 +22,30 @@ sub asignar_proceso() {
     my ( $self, $proceso ) = @_;
     $self->{_proceso} = $proceso;
 
-    my $pepe2 = $proceso->proceso_id();
+    # my $pepe2 = $proceso->proceso_id();
 
     # print "\n Existe PROCESO en ASIGNAR??: $pepe2 \n";
-    my $pepe = $self->{_proceso}->proceso_id();
+    # my $pepe = $self->{_proceso}->proceso_id();
     # print "\n Existe PROCESO GRABADO??: $pepe \n";
-
 }
 
 sub semWait() {
     my ( $self, $semaforo ) = @_;
     my $pepe5= $semaforo->contar();
-    print " \n Semaforo contar en OS semWait: $pepe5 \n";
+    # print " \n Semaforo contar en OS semWait: $pepe5 \n";
 
     $semaforo->down();
     if ( $pepe5 < 0 ) {
         $semaforo->dormir_proceso( $self->{_proceso} );
     }
-
 }
 
 
 sub semSignal() {
     my ( $self, $semaforo ) = @_;
 
-
     $semaforo->up();
     my $cant = $semaforo->contar();
-    my $cant2 = $semaforo->{_name};
-    print " \n Contar en semSignal: $cant \n";
 
     if ( $cant < 0 ) {
         my $proceso_listo = $semaforo->despertar_proceso();

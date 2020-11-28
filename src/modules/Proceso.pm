@@ -59,11 +59,6 @@ Modifica el estado interno del servicio a EJECUTANDO
 sub cambiar_a_ejecutando() {
     my ( $self ) = @_;
     $self->{_estado} = "EJECUTANDO";
-
-    print $self->{_ciclo_siguiente_sumar_semaforo};
-    $self->{_ciclo_siguiente_sumar_semaforo}->down();
-    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} - 1;
-    $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
 
 =pod
@@ -72,7 +67,6 @@ Modifica el estado interno del servicio a LISTO
 sub cambiar_a_listo() {
     my ( $self ) = @_;
     $self->{_estado} = "LISTO";
-
 }
 
 =pod
@@ -81,13 +75,6 @@ Modifica el estado interno del servicio a FINALIZADO
 sub cambiar_a_finalizado() {
     my ( $self ) = @_;
     $self->{_estado} = "FINALIZADO";
-
-    $self->{_ciclo_siguiente_sumar_semaforo}->down();
-    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
-
-    if ( $self->{_procesos_finalizados} == 2 ) {
-        $self->{_ciclo_siguiente_semaforo}->up();
-    }
 
     $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
@@ -98,15 +85,6 @@ Modifica el estado interno del servicio a BLOQUEADO
 sub cambiar_a_bloqueado() {
     my ( $self ) = @_;
     $self->{_estado} = "BLOQUEADO";
-
-    $self->{_ciclo_siguiente_sumar_semaforo}->down();
-    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
-
-    if ( $self->{_procesos_finalizados} == 2 ) {
-        $self->{_ciclo_siguiente_semaforo}->up();
-    }
-
-    $self->{_ciclo_siguiente_sumar_semaforo}->up();
 
     # Bloqueo el hilo
     print " \n Antes de dormir, estado: $self->{_estado} \n";

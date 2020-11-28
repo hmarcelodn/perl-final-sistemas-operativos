@@ -46,14 +46,14 @@ sub contar() {
 
 sub dormir_proceso() {
     my ( $self, $proceso ) = @_;
-    print " \n Dormir Proceso: $proceso \n";
+    # print " \n Dormir Proceso: $proceso \n";
     $proceso->cambiar_a_bloqueado();
     push ( $self->{_items}, $proceso );
 }
 
 sub despertar_proceso() {
     my ( $self ) = @_;
-    print " \n Cantidad:   @{$self->{_items}} \n";
+    # print " \n Cantidad:   @{$self->{_items}} \n";
     if ( $self->{_count} > 0 ) {
         return shift(@{$self->{_items}});
     }

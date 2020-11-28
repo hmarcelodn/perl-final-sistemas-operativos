@@ -12,6 +12,9 @@ sub new {
     my $class = shift;
     my $self = {
         _proceso => undef,
+        _procesos_finalizados => shift,
+        _ciclo_siguiente_semaforo => shift,
+        _ciclo_siguiente_sumar_semaforo => shift,
         _estado => "LIBRE",
         _ciclos => 0,
     };
@@ -58,12 +61,46 @@ sub estado() {
 sub cambiar_libre() {
     my ( $self, $proceso ) = @_;
     $self->{_estado} = "LIBRE";
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
+
+    # print "cambiar_libre";
+
+    if ( $self->{_procesos_finalizados} == 2 ) {
+        $self->{_ciclo_siguiente_semaforo}->up();
+    }
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
 
 # Modificar el estado del CPU a OCUPADO
 sub cambiar_ocupado() {
     my ( $self, $proceso ) = @_;
     $self->{_estado} = "OCUPADO";
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} - 1;
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
+}
+
+sub cambiar_ocioso() {
+    my ( $self ) = @_;
+
+    # print "cambiar_ocioso";
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} - 1;
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
+
+    if ( $self->{_procesos_finalizados} == 2 ) {
+        $self->{_ciclo_siguiente_semaforo}->up();
+    }
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
 
 # Ejecutar ciclo
@@ -75,15 +112,22 @@ sub ejecutar() {
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
         $self->{_proceso}->ejecutar($dba);
 
-        print " \n Existe un objeto en ejecutar de CPU ? --> $self->{_proceso} \n";
-        my $pepe= $self->{_proceso}->proceso_id();
         my $cant = $self->{_proceso}->tiempo_servicio();
-        print "\n Ejecutando proceso -> $pepe --> en tiempo servicio : $cant \n";
 
         if ( $cant == 0 ) {
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
             $self->{_proceso} = undef;
+        } else {
+            # TODO: Cambiar libre refactor
+            $self->{_ciclo_siguiente_sumar_semaforo}->down();
+            $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
+
+            if ( $self->{_procesos_finalizados} == 2 ) {
+                $self->{_ciclo_siguiente_semaforo}->up();
+            }
+
+            $self->{_ciclo_siguiente_sumar_semaforo}->up();
         }
     }
 }
