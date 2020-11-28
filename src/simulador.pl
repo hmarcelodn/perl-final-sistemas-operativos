@@ -45,7 +45,7 @@ my $cola_nuevos = Thread::Queue->new();
 my $cola_salida = Thread::Queue->new();
 
 # Instancia del monitor
-my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida);
+my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $escribir_mutex, $sumar_mutex);
 
 # Reloj CPU
 my $ciclos :shared = 0;
@@ -90,11 +90,13 @@ Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
     # $cola_nuevos->enqueue( Lector->new(2, 2, "P0", "NUEVO", 90) ); # Termina en 4
-    $cola_nuevos->enqueue( Lector->new(1, 9, "P1", "NUEVO", 5, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Lector->new(2, 2, "P2", "NUEVO", 6, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P2", "NUEVO", 8, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
-    # $cola_nuevos->enqueue( Lector->new(2, 3, "P1", "NUEVO", 7, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 9, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    $cola_nuevos->enqueue( Lector->new(1, 9, "P1", "NUEVO", 5, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Lector->new(2, 2, "P2", "NUEVO", 6, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 8, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    $cola_nuevos->enqueue( Lector->new(3, 3, "P4", "NUEVO", 7, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Escritor->new(5, 1, "P6", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    $cola_nuevos->enqueue( Escritor->new(7, 1, "P7", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    $cola_nuevos->enqueue( Escritor->new(8, 1, "P8", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
     # $cola_nuevos->enqueue( Escritor->new(3, 1, "P4", "NUEVO", 60) );
     # $cola_nuevos->enqueue( Lector->new(4,1, "P5", "NUEVO", 80) );
     # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );

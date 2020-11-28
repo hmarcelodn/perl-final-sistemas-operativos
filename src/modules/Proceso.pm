@@ -18,8 +18,6 @@ sub new {
         _proceso_id      => shift,
         _estado          => shift,
         _cantidad        => shift,
-        _procesos_finalizados => shift,
-        _ciclo_siguiente_semaforo => shift,
         _ciclo_siguiente_sumar_semaforo => shift,
     };
 

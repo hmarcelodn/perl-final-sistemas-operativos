@@ -40,8 +40,6 @@ sub get_cantidad_disponible() {
 
 sub leer_db() {
     my ( $self, $proceso ) = @_;
-    # print " \n Exite OS???? : $self->{_os} \n ";
-    # print " \n Contador Lectores en DB : $self->{_contador_lectores} \n ";
 
     $self->{_os}->asignar_proceso( $proceso );
     $self->{_os}->semWait( $self->{_sumar_mutex} );
@@ -51,9 +49,6 @@ sub leer_db() {
         $self->{_os}->semWait( $self->{_escribir_mutex} );
     }
     $self->{_os}->semSignal( $self->{_escribir_mutex} );
-
-    # print "\n Lei $proceso->{_cantidad} de $self->{_cantidad_disponible} \n";
-    sleep 3;
 
     $self->{_os}->semWait( $self->{_sumar_mutex} );
     $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
@@ -71,8 +66,6 @@ sub grabar_db() {
     $self->{_os}->asignar_proceso( $proceso );
     $self->{_os}->semWait( $self->{_escribir_mutex} );
 
-    # print "\n Estoy Escribiendo $proceso->{_cantidad} en $self->{_cantidad_disponible} \n";
-    sleep 3;
     $self->{_cantidad_disponible} += $proceso->{_cantidad};
 
     $self->{_os}->semSignal( $self->{_escribir_mutex} );

@@ -31,11 +31,11 @@ sub asignar_proceso() {
 
 sub semWait() {
     my ( $self, $semaforo ) = @_;
-    my $pepe5= $semaforo->contar();
+    my $sem_value= $semaforo->contar();
     # print " \n Semaforo contar en OS semWait: $pepe5 \n";
 
     $semaforo->down();
-    if ( $pepe5 < 0 ) {
+    if ( $sem_value < 0 ) {
         $semaforo->dormir_proceso( $self->{_proceso} );
     }
 }

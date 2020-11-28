@@ -10,10 +10,12 @@ Abstraccion que permite visualizar el estado de las colas en todo momento
 sub new() {
     my $class = shift;
     my $self = {
-        _nuevos => shift,
-        _listos => shift,
+        _nuevos     => shift,
+        _listos     => shift,
         _ejecutando => shift,
-        _salida => shift,
+        _salida     => shift,
+        _escribir_mutex => shift,
+        _sumar_mutex => shift,
     };
 
     bless $self, $class;
@@ -28,6 +30,7 @@ sub imprimir_estado_colas() {
     my ( $self, $ciclos, $proceso_id, $estado_cpu ) = @_;
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
+    my $procesos_encolados_write = $self->{_escribir_mutex}->contar();
 
     system("clear");
 
@@ -73,6 +76,26 @@ sub imprimir_estado_colas() {
             my $proceso_servicio = $proceso_nuevo->tiempo_servicio();
             print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
+        }
+
+        print "-----------------------------------\n";
+    }
+
+    print "\n\n\n\n";
+    print "-----------------------------------\n";
+    print "COLA: Escritores  Bloqueados \n";
+    print "-----------------------------------\n";
+    print "Proceso      Llegada     Servicio\n";
+    print "-----------------------------------\n";
+    my $proceso_bloq_indice = 0;
+    if ($self->{_escribir_mutex}->contar() > 0) {
+        while ($proceso_bloq_indice < $procesos_encolados_write) {
+            my $proceso_bloq = $self->{_escribir_mutex}->{_items}->peek($proceso_nuevo_indice);
+            my $proceso_id_bloq = $proceso_bloq->proceso_id();
+            my $proceso_llegada_bloq = $proceso_bloq->llegada();
+            my $proceso_servicio_bloq = $proceso_bloq->tiempo_servicio();
+            print "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
+            $proceso_bloq_indice = $proceso_bloq_indice + 1;
         }
 
         print "-----------------------------------\n";
