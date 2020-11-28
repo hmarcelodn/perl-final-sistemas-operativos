@@ -24,7 +24,7 @@ sub down() {
     my ( $self, $proceso ) = @_;
 
     if ( $self->{_count} < 1 ) {
-        @push ( $self->{_items}, $proceso )
+        push ( $self->{_items}, $proceso );
     } else {
         $self->{_count} = $self->{_count} + 1;
     }
@@ -50,3 +50,4 @@ sub despertar_proceso() {
     }
 }
 
+1;
