@@ -75,7 +75,12 @@ sub ejecutar() {
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
         $self->{_proceso}->ejecutar($dba);
 
-        if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
+        print " \n Existe un objeto en ejecutar de CPU ? --> $self->{_proceso} \n";
+        my $pepe= $self->{_proceso}->proceso_id();
+        my $cant = $self->{_proceso}->tiempo_servicio();
+        print "\n Ejecutando proceso -> $pepe --> en tiempo servicio : $cant \n";
+
+        if ( $cant == 0 ) {
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
             $self->{_proceso} = undef;

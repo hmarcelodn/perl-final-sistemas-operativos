@@ -30,7 +30,7 @@ use Os;
 
 # Semaforos
 my $contador_lectores :shared = 0;
-my $escribir_mutex = Semaforo->new('contador_lectores', 1);
+my $escribir_mutex = Semaforo->new('escribir_mutex', 1);
 my $sumar_mutex = Semaforo->new('sumar_mutex', 1);
 
 # Colas Planificacion de corto plazo
@@ -80,7 +80,7 @@ $cpu_semaforo->down();
 
 # Creacion instancia OS / DB
 my $os_instance = Os->new( $cola_listos );
-my $base_datos = Db->new('DB1', 100000000, $contador_lectores, $escribir_mutex, $sumar_mutex, $os_instance);
+my $base_datos = Db->new('DB1', 100000000, $escribir_mutex, $sumar_mutex, $contador_lectores, $os_instance);
 
 my $cola_db = Thread::Queue->new();
 $cola_db->enqueue( $base_datos );
@@ -90,11 +90,11 @@ Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
     # $cola_nuevos->enqueue( Lector->new(2, 2, "P0", "NUEVO", 90) ); # Termina en 4
-    $cola_nuevos->enqueue( Lector->new(1, 3, "P1", "NUEVO", 5, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Lector->new(2, 5, "P1", "NUEVO", 6, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P2", "NUEVO", 8, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    $cola_nuevos->enqueue( Lector->new(1, 9, "P1", "NUEVO", 5, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    # $cola_nuevos->enqueue( Lector->new(2, 1, "P2", "NUEVO", 6, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Escritor->new(3, 1, "P2", "NUEVO", 8, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
     # $cola_nuevos->enqueue( Lector->new(2, 3, "P1", "NUEVO", 7, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 40) );
+    $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 9, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
     # $cola_nuevos->enqueue( Escritor->new(3, 1, "P4", "NUEVO", 60) );
     # $cola_nuevos->enqueue( Lector->new(4,1, "P5", "NUEVO", 80) );
     # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
@@ -131,12 +131,12 @@ sub simular() {
             $despachador->despachar();
 
             # Me obliga a correr 2 procesos a la vez, por ej, E/L
-            print "HOLA 1";
-            print $cola_procesadores->peek(0);
-            $cola_procesadores->peek(0)->ejecutar($db_instancia);
-            $cola_procesadores->peek(1)->ejecutar($db_instancia);
-            # threads->create(sub { $cola_procesadores->peek(0)->ejecutar($db_instancia) })->detach(); # Corrio
-            # threads->create(sub { $cola_procesadores->peek(1)->ejecutar($db_instancia) })->detach(); # Durmio
+            # print "HOLA 1";
+            # print $cola_procesadores->peek(0);
+            # $cola_procesadores->peek(0)->ejecutar($db_instancia);
+            # $cola_procesadores->peek(1)->ejecutar($db_instancia);
+            threads->create(sub { $cola_procesadores->peek(0)->ejecutar($db_instancia) })->detach(); # Corrio
+            threads->create(sub { $cola_procesadores->peek(1)->ejecutar($db_instancia) })->detach(); # Durmio
 
             # $cola_procesadores->peek(0)->ejecutar($db_instancia);
             # $cola_procesadores->peek(1)->ejecutar($db_instancia);

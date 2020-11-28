@@ -62,7 +62,7 @@ sub cambiar_a_ejecutando() {
 
     print $self->{_ciclo_siguiente_sumar_semaforo};
     $self->{_ciclo_siguiente_sumar_semaforo}->down();
-    $self->{__procesos_finalizados} = $self->{__procesos_finalizados} - 1;
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} - 1;
     $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
 
@@ -83,9 +83,9 @@ sub cambiar_a_finalizado() {
     $self->{_estado} = "FINALIZADO";
 
     $self->{_ciclo_siguiente_sumar_semaforo}->down();
-    $self->{__procesos_finalizados} = $self->{__procesos_finalizados} + 1;
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
 
-    if ( $self->{__procesos_finalizados} == 2 ) {
+    if ( $self->{_procesos_finalizados} == 2 ) {
         $self->{_ciclo_siguiente_semaforo}->up();
     }
 
@@ -100,16 +100,18 @@ sub cambiar_a_bloqueado() {
     $self->{_estado} = "BLOQUEADO";
 
     $self->{_ciclo_siguiente_sumar_semaforo}->down();
-    $self->{__procesos_finalizados} = $self->{__procesos_finalizados} + 1;
+    $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
 
-    if ( $self->{__procesos_finalizados} == 2 ) {
+    if ( $self->{_procesos_finalizados} == 2 ) {
         $self->{_ciclo_siguiente_semaforo}->up();
     }
 
     $self->{_ciclo_siguiente_sumar_semaforo}->up();
 
     # Bloqueo el hilo
+    print " \n Antes de dormir, estado: $self->{_estado} \n";
     while ($self->{_estado} == "BLOQUEADO") {
+        print "\n Me voy a dormir: $self->{_proceso_id} \n";
         sleep 1;
     }
 }

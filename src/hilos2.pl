@@ -11,7 +11,7 @@ my $th3 = threads->create(sub {
     $escribirMutex->down();
 
     $db = $db + 1;
-    print "ESTOY ESCRIBIENDO: ".$db;
+    # print "ESTOY ESCRIBIENDO: ".$db;
 
     $escribirMutex->up();
 });
@@ -30,7 +30,7 @@ my $th1 = threads->create(sub {
 
     $sumarMutex->up();
 
-    print "ESTOY LEYENDO: ".$db." \n";
+    # print "ESTOY LEYENDO: ".$db." \n";
     sleep 3;
 
     $sumarMutex->down();
@@ -60,7 +60,7 @@ my $th2 = threads->create(sub {
 
     $sumarMutex->up();
 
-    print "ESTOY LEYENDO 2: ".$db." \n";
+    # print "ESTOY LEYENDO 2: ".$db." \n";
     sleep 3;
 
     $sumarMutex->down();

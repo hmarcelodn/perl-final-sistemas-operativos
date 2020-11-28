@@ -12,7 +12,7 @@ my $th1 = threads->create(sub {
         # $monitor_semaforo->down();
         $cpu_semaforo->down(); # 1
 
-        print "HILO 2 \n";
+        # print "HILO 2 \n";
         sleep 3;
 
         $monitor_semaforo->up();
@@ -25,7 +25,7 @@ while(1) {
     # $cpu_semaforo->down();
     $monitor_semaforo->down(); # 0
 
-    print "HILO 1 \n";
+    # print "HILO 1 \n";
     sleep 2;
 
     # $monitor_semaforo->up();
