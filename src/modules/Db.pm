@@ -6,10 +6,6 @@ use strict;
 use warnings;
 use Semaforo;
 
-my $contador_lectores :shared = 0;
-my $escribir_mutex = Semaforo->new('contador_lectores', 1);
-my $sumar_mutex = Semaforo->new('sumar_mutex', 1);;
-
 sub new {
     my $class = shift;
 
@@ -18,10 +14,13 @@ sub new {
         _cantidad_disponible => shift,
         _escribir_mutex      => shift,
         _sumar_mutex         => shift,
+        _contador_lectores   => shift,
+        _os                  => shift,
     };
 
     bless $self, $class;
-    return $self
+
+    return $self;
 }
 
 sub set_nombre_db() {
@@ -40,38 +39,42 @@ sub get_cantidad_disponible() {
 }
 
 sub leer_db() {
-    my ($self, $proceso) = @_;
-    $sumar_mutex->down($proceso);
-    $contador_lectores = $contador_lectores + 1;
+    my ( $self, $proceso ) = @_;
 
-    if($contador_lectores == 1) {
-        $escribir_mutex->down($proceso);
+    $self->{_os}->asignar_proceso( $proceso );
+    $self->{_os}->semWait( $self->{_sumar_mutex} );
+    $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
+
+    if($self->{_contador_lectores} == 1) {
+        $self->{_os}->semWait( $self->{_escribir_mutex} );
     }
-    $sumar_mutex->up();
+
+    $self->{_os}->semSignal( $self->{_escribir_mutex} );
 
     print "\n Lei $proceso->{_cantidad} de $self->{_cantidad_disponible} \n";
     sleep 3;
 
-    $sumar_mutex->down($proceso);
+    $self->{_os}->semWait( $self->{_sumar_mutex} );
+    $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
 
-    $contador_lectores = $contador_lectores -1;
-    if($contador_lectores == 0) {
-        $escribir_mutex->up();
+    if($self->{_contador_lectores} == 0) {
+        $self->{_escribir_mutex}->up();
     }
 
-    $sumar_mutex->up();
+    $self->{_os}->semSignal( $self->{_sumar_mutex} );
 }
 
 sub grabar_db() {
     my ($self, $proceso) = @_;
-    $escribir_mutex->down($proceso);
+
+    $self->{_os}->asignar_proceso( $proceso );
+    $self->{_os}->semWait( $self->{_escribir_mutex} );
 
     print "\n Estoy Escribiendo $proceso->{_cantidad} en $self->{_cantidad_disponible} \n";
     sleep 3;
     $self->{_cantidad_disponible} += $proceso->{_cantidad};
 
-    $escribir_mutex->up();
-
+    $self->{_os}->semSignal( $self->{_escribir_mutex} );
 }
 
 sub print_disponible() {

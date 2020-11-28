@@ -26,6 +26,12 @@ use Lector;
 use Db;
 use Cpu;
 use Monitor;
+use Os;
+
+# Semaforos
+my $contador_lectores :shared = 0;
+my $escribir_mutex = Semaforo->new('contador_lectores', 1);
+my $sumar_mutex = Semaforo->new('sumar_mutex', 1);
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Thread::Queue->new();
@@ -64,19 +70,30 @@ my $modo_monitor :shared = 0;
 # Semaforos del Planificador
 my $cpu_semaforo = Thread::Semaphore->new();
 my $monitor_semaforo = Thread::Semaphore->new();
+my $ciclo_siguiente_semaforo = Thread::Semaphore->new();
+my $ciclo_siguiente_sumar_semaforo = Thread::Semaphore->new();
+my $procesos_finalizados :shared = 0;
+$ciclo_siguiente_semaforo->down();
 
 # Primero monitorea, luego cicla el CPU
 $cpu_semaforo->down();
+
+# Creacion instancia OS / DB
+my $os_instance = Os->new( $cola_listos );
+my $base_datos = Db->new('DB1', 100000000, $contador_lectores, $escribir_mutex, $sumar_mutex, $os_instance);
+
+my $cola_db = Thread::Queue->new();
+$cola_db->enqueue( $base_datos );
 
 =pod
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
     # $cola_nuevos->enqueue( Lector->new(2, 2, "P0", "NUEVO", 90) ); # Termina en 4
-    $cola_nuevos->enqueue( Lector->new(1, 3, "P1", "NUEVO", 5) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Lector->new(2, 5, "P1", "NUEVO", 6) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Escritor->new(3, 1, "P2", "NUEVO", 8) ); # Empieza en 6 y termina en 8
-    $cola_nuevos->enqueue( Lector->new(2, 3, "P1", "NUEVO", 7) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Lector->new(1, 3, "P1", "NUEVO", 5, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Lector->new(2, 5, "P1", "NUEVO", 6, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P2", "NUEVO", 8, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    # $cola_nuevos->enqueue( Lector->new(2, 3, "P1", "NUEVO", 7, $procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
     # $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 40) );
     # $cola_nuevos->enqueue( Escritor->new(3, 1, "P4", "NUEVO", 60) );
     # $cola_nuevos->enqueue( Lector->new(4,1, "P5", "NUEVO", 80) );
@@ -97,7 +114,7 @@ sub simular() {
     # Hilo 1 - Simulador
     my $simulacion_hilo = threads->create(sub {
         # Creo instancia de DB
-        my $base_datos = Db->new('Db1', 100000000);
+        my $db_instancia = $cola_db->peek(0);
 
         while(1) {
             # Permitir ciclos de CPU
@@ -114,20 +131,29 @@ sub simular() {
             $despachador->despachar();
 
             # Me obliga a correr 2 procesos a la vez, por ej, E/L
-            $cola_procesadores->peek(0)->ejecutar($base_datos);
-            $cola_procesadores->peek(1)->ejecutar($base_datos);
+            print "HOLA 1";
+            print $cola_procesadores->peek(0);
+            $cola_procesadores->peek(0)->ejecutar($db_instancia);
+            $cola_procesadores->peek(1)->ejecutar($db_instancia);
+            # threads->create(sub { $cola_procesadores->peek(0)->ejecutar($db_instancia) })->detach(); # Corrio
+            # threads->create(sub { $cola_procesadores->peek(1)->ejecutar($db_instancia) })->detach(); # Durmio
+
+            # $cola_procesadores->peek(0)->ejecutar($db_instancia);
+            # $cola_procesadores->peek(1)->ejecutar($db_instancia);
+            # $ciclo_siguiente_semaforo->down();
 
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
 
-            my $test1 = $cola_procesadores->peek(0)->estado();
-            my $test2 = $cola_procesadores->peek(1)->estado();
 
-            print "\n Estado PROC 1: $test1 \n";
-            print "\n Estado PROC 2: $test2 \n";
+            # my $test1 = $cola_procesadores->peek(0)->estado();
+            # my $test2 = $cola_procesadores->peek(1)->estado();
 
-            $cpu_estado = $cola_procesadores->peek(1)->estado();
-            $cpu_proceso_id = $cola_procesadores->peek(1)->proceso_asignado();
+            # print "\n Estado PROC 1: $test1 \n";
+            # print "\n Estado PROC 2: $test2 \n";
+
+            # $cpu_estado = $cola_procesadores->peek(1)->estado();
+            # $cpu_proceso_id = $cola_procesadores->peek(1)->proceso_asignado();
 
             # Permitir monitorear luego de despachar
             $monitor_semaforo->up();
@@ -164,86 +190,83 @@ sub simular() {
         }
     });
 
-    $simulacion_monitor->detach();
+    $simulacion_monitor->join();
 
-    # Hilo 3 - Interaccion principal
-    while(1) {
-        system("clear");
-        my @threads = threads->list();
-        my @running = threads->list(threads::running);
-        my @joinable = threads->list(threads::joinable);
-        print "Using threads.pm version $threads::VERSION\n";
-        print "=====================================\n";
-        print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
-        print "=====================================\n";
-        print "AYUDA GESTOR DE PROCESOS \n\n";
-        print "1) AGREGAR UN NUEVO PROCESO \n";
-        print "2) MONITOREAR COLAS DE PLANIFICACION \n";
-        print "3) TERMINAR \n\n";
+    # # Hilo 3 - Interaccion principal
+    # while(1) {
+    #     # system("clear");
+    #     print "Using threads.pm version $threads::VERSION\n";
+    #     print "=====================================\n";
+    #     print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";
+    #     print "=====================================\n";
+    #     print "AYUDA GESTOR DE PROCESOS \n\n";
+    #     print "1) AGREGAR UN NUEVO PROCESO \n";
+    #     print "2) MONITOREAR COLAS DE PLANIFICACION \n";
+    #     print "3) TERMINAR \n\n";
 
-        my $opcion = 0;
+    #     my $opcion = 0;
 
-        # Solicitar ingreso del comando en menu
-        while ($opcion < 1 || $opcion > 3) {
-            print "+ INGRESAR OPCION: ";
-            $opcion = <STDIN>;
-            chomp $opcion;
+    #     # Solicitar ingreso del comando en menu
+    #     while ($opcion < 1 || $opcion > 3) {
+    #         print "+ INGRESAR OPCION: ";
+    #         $opcion = <STDIN>;
+    #         chomp $opcion;
 
-            if ($opcion < 1 || $opcion > 3) {
-                print "- OPCION INCORRECTA \n";
-            }
-        }
+    #         if ($opcion < 1 || $opcion > 3) {
+    #             print "- OPCION INCORRECTA \n";
+    #         }
+    #     }
 
-        given ($opcion)
-        {
-            when (1) {
-                print "AGREGAR UN NUEVO PROCESO \n";
-                my $nuevo_proceso_pid;
-                my $nuevo_proceso_llegada;
-                my $nuevo_proceso_servicio;
-                my $nuevo_proceso_tipo;
+    #     given ($opcion)
+    #     {
+    #         when (1) {
+    #             print "AGREGAR UN NUEVO PROCESO \n";
+    #             my $nuevo_proceso_pid;
+    #             my $nuevo_proceso_llegada;
+    #             my $nuevo_proceso_servicio;
+    #             my $nuevo_proceso_tipo;
 
-                print "INGRESAR TIPO PROCESO L (LECTOR) / E (ESCRITOR): ";
-                $nuevo_proceso_tipo = <STDIN>;
-                chomp $nuevo_proceso_tipo;
+    #             print "INGRESAR TIPO PROCESO L (LECTOR) / E (ESCRITOR): ";
+    #             $nuevo_proceso_tipo = <STDIN>;
+    #             chomp $nuevo_proceso_tipo;
 
-                print "INGRESAR PID: ";
-                $nuevo_proceso_pid = <STDIN>;
-                chomp $nuevo_proceso_pid;
+    #             print "INGRESAR PID: ";
+    #             $nuevo_proceso_pid = <STDIN>;
+    #             chomp $nuevo_proceso_pid;
 
-                print "INGRESAR TIEMPO LLEGADA: ";
-                $nuevo_proceso_llegada = <STDIN>;
-                chomp $nuevo_proceso_llegada;
+    #             print "INGRESAR TIEMPO LLEGADA: ";
+    #             $nuevo_proceso_llegada = <STDIN>;
+    #             chomp $nuevo_proceso_llegada;
 
-                print "INGRESAR TIEMPO DE SERVICIO: ";
-                $nuevo_proceso_servicio = <STDIN>;
-                chomp $nuevo_proceso_servicio;
+    #             print "INGRESAR TIEMPO DE SERVICIO: ";
+    #             $nuevo_proceso_servicio = <STDIN>;
+    #             chomp $nuevo_proceso_servicio;
 
-                if( $nuevo_proceso_tipo == 'L') {
-                    $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
-                } else {
-                    $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
-                }
-                print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
-            }
-            when (2) {
-                my $key;
-                $modo_monitor = 1;
+    #             if( $nuevo_proceso_tipo == 'L') {
+    #                 $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+    #             } else {
+    #                 $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+    #             }
+    #             print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
+    #         }
+    #         when (2) {
+    #             my $key;
+    #             $modo_monitor = 1;
 
-                # Mientras no se presione una tecla, mantener el modo monitor
-                while(not defined ($key = ReadKey(-1))) {}
+    #             # Mientras no se presione una tecla, mantener el modo monitor
+    #             while(not defined ($key = ReadKey(-1))) {}
 
-                $modo_monitor = 0;
-            }
-            when (3) {
-                print "SALIR \n";
-                exit;
-            }
-            default {
-                print 0;
-            }
-        }
-    }
+    #             $modo_monitor = 0;
+    #         }
+    #         when (3) {
+    #             print "SALIR \n";
+    #             exit;
+    #         }
+    #         default {
+    #             print 0;
+    #         }
+    #     }
+    # }
 }
 
 mock_procesos();

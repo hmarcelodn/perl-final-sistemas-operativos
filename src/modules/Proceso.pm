@@ -18,6 +18,9 @@ sub new {
         _proceso_id      => shift,
         _estado          => shift,
         _cantidad        => shift,
+        _procesos_finalizados => shift,
+        _ciclo_siguiente_semaforo => shift,
+        _ciclo_siguiente_sumar_semaforo => shift,
     };
 
     bless $self, $class;
@@ -56,6 +59,11 @@ Modifica el estado interno del servicio a EJECUTANDO
 sub cambiar_a_ejecutando() {
     my ( $self ) = @_;
     $self->{_estado} = "EJECUTANDO";
+
+    print $self->{_ciclo_siguiente_sumar_semaforo};
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{__procesos_finalizados} = $self->{__procesos_finalizados} - 1;
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
 
 =pod
@@ -64,6 +72,7 @@ Modifica el estado interno del servicio a LISTO
 sub cambiar_a_listo() {
     my ( $self ) = @_;
     $self->{_estado} = "LISTO";
+
 }
 
 =pod
@@ -72,6 +81,37 @@ Modifica el estado interno del servicio a FINALIZADO
 sub cambiar_a_finalizado() {
     my ( $self ) = @_;
     $self->{_estado} = "FINALIZADO";
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{__procesos_finalizados} = $self->{__procesos_finalizados} + 1;
+
+    if ( $self->{__procesos_finalizados} == 2 ) {
+        $self->{_ciclo_siguiente_semaforo}->up();
+    }
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
+}
+
+=pod
+Modifica el estado interno del servicio a BLOQUEADO
+=cut
+sub cambiar_a_bloqueado() {
+    my ( $self ) = @_;
+    $self->{_estado} = "BLOQUEADO";
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->down();
+    $self->{__procesos_finalizados} = $self->{__procesos_finalizados} + 1;
+
+    if ( $self->{__procesos_finalizados} == 2 ) {
+        $self->{_ciclo_siguiente_semaforo}->up();
+    }
+
+    $self->{_ciclo_siguiente_sumar_semaforo}->up();
+
+    # Bloqueo el hilo
+    while ($self->{_estado} == "BLOQUEADO") {
+        sleep 1;
+    }
 }
 
 =pod
@@ -82,6 +122,5 @@ sub get_cantidad() {
     my ( $self ) = @_;
     return $self ->{_cantidad};
 }
-
 
 1;

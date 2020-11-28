@@ -21,6 +21,7 @@ sub new {
     return $self
 }
 
+
 sub proceso_asignado() {
     my ( $self ) = @_;
 
@@ -29,6 +30,16 @@ sub proceso_asignado() {
     }
 
     return "NINGUNO";
+}
+
+sub proceso_instancia() {
+    my ( $self ) = @_;
+
+    if ( $self->{_proceso} ) {
+        return $self->{_proceso};
+    }
+
+    return undef;
 }
 
 # Utilizado por el dispatcher para asignar al CPU un nuevo proceso
