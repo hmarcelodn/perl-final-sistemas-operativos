@@ -41,7 +41,7 @@ sub get_cantidad_disponible() {
 sub leer_db() {
     my ( $self, $proceso ) = @_;
 
-    $self->{_os}->asignar_proceso( $proceso );
+    # $self->{_os}->asignar_proceso( $proceso );
 
     # TODO:
     if ( $proceso->contar_ejecuciones() == 0 ) {
@@ -69,9 +69,11 @@ sub leer_db() {
         if($self->{_contador_lectores} == 0) {
             $self->{_os}->asignar_proceso( $proceso );
             $self->{_os}->semSignal( $self->{_escribir_mutex} );
-            print "\n TERMINE DE LEER \n";
+            # print "\n TERMINE DE LEER \n";
+            # print $proceso;
         }
 
+        $self->{_os}->asignar_proceso( $proceso );
         $self->{_os}->semSignal( $self->{_sumar_mutex} );
     }
 
@@ -87,11 +89,11 @@ sub grabar_db() {
 
     # $self->{_cantidad_disponible} += $proceso->{_cantidad};
     # print "\n GRABAR MUTEX ESCRITOR $self->{_contador_lectores} $self->{_escribir_mutex}->{_count} \n";
-    # print "\n ESCRIBIENDO \n";
+    print "\n ESCRIBIENDO $proceso->{_proceso_id} \n";
     # sleep 10;
-    # print "\n TERMINO ESCRIBIENDO \n";
 
     if ( $proceso->tiempo_servicio() == 0 ) {
+        print "\n TERMINO ESCRIBIENDO $proceso->{_proceso_id} \n";
         $self->{_os}->asignar_proceso( $proceso );
         $self->{_os}->semSignal( $self->{_escribir_mutex} );
     }

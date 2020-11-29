@@ -53,7 +53,8 @@ sub planificar() {
     if ( $self->{_ejecutando}->pending() > 0 ) {
         my $proceso_ejecutando = $self->{_ejecutando}->peek(0);
 
-        # Si el proceso termino sus quantums, renovarlos y mandar el proceso al final de la cola de listos para darle tiempo de proceso a los demas
+        # Si el proceso se quedo sin servicio sacarlo de la cola de ejecutando
+        # Si el proceso se quedo sin quantums, renovarlos y mandar al final de la cola de listos
         if ( $proceso_ejecutando->tiempo_servicio() == 0 ) {
             $self->{_ejecutando}->dequeue_nb();
         } elsif ( $proceso_ejecutando->contar_quantums() == 0 ) {

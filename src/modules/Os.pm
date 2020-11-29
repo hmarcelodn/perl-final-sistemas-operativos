@@ -33,7 +33,7 @@ sub semWait() {
     $semaforo->down();
 
     if ( $semaforo->contar() < 0 ) {
-        print "DURMIENDO PROCESO! \n";
+        print "\n DURMIENDO PROCESO! \n";
         print $self->{_proceso};
 
         # Libero el procesador del proceso bloqueado
@@ -57,7 +57,7 @@ sub semSignal() {
     $semaforo->up();
 
     if ( $semaforo->contar() <= 0 ) {
-        print "DESPERTAR PROCESO \n";
+        print "\n DESPERTAR PROCESO \n";
         my $proceso_listo = $semaforo->despertar_proceso();
         print $proceso_listo;
         $self->{_cola_procesadores}->peek(0)->asignar( $proceso_listo );

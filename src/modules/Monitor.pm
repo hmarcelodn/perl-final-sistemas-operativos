@@ -32,7 +32,7 @@ sub imprimir_estado_colas() {
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
     my $procesos_encolados_write = $self->{_escribir_mutex}->contar();
 
-    system("clear");
+    # system("clear");
 
     print "===================================================================\n";
     print "MONITOREANDO COLAS DE PLANIFICACION (presione Enter para salir...) \n";

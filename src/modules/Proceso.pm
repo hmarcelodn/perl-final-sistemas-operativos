@@ -18,7 +18,7 @@ sub new {
         _proceso_id      => shift,
         _estado          => shift,
         _cantidad        => shift,
-        _ciclo_siguiente_sumar_semaforo => shift,
+        _ciclo_siguiente_semaforo => shift,
         _quantum         => 0,
         _ejecuciones     => 0,
     };
@@ -105,8 +105,6 @@ Modifica el estado interno del servicio a FINALIZADO
 sub cambiar_a_finalizado() {
     my ( $self ) = @_;
     $self->{_estado} = "FINALIZADO";
-
-    $self->{_ciclo_siguiente_sumar_semaforo}->up();
 }
 
 =pod
