@@ -19,11 +19,43 @@ sub new {
         _estado          => shift,
         _cantidad        => shift,
         _ciclo_siguiente_sumar_semaforo => shift,
+        _quantum         => 0,
+        _ejecuciones     => 0,
     };
 
     bless $self, $class;
 
     return $self
+}
+
+sub sumar_ejecuciones() {
+    my ( $self, $quantum ) = @_;
+
+    $self->{_ejecuciones} = $self->{_ejecuciones} + 1;
+}
+
+sub contar_ejecuciones() {
+    my ( $self, $quantum ) = @_;
+
+    return $self->{_ejecuciones};
+}
+
+sub asignar_quantum() {
+    my ( $self, $quantum ) = @_;
+
+    $self->{_quantum} = $quantum;
+}
+
+sub contar_quantums() {
+    my ( $self, $quantum ) = @_;
+
+    return $self->{_quantum};
+}
+
+sub descontar_quantum() {
+    my ( $self ) = @_;
+
+    $self->{_quantum} = $self->{_quantum} - 1;
 }
 
 =pod
@@ -85,9 +117,8 @@ sub cambiar_a_bloqueado() {
     $self->{_estado} = "BLOQUEADO";
 
     # Bloqueo el hilo
-    print " \n Antes de dormir, estado: $self->{_estado} \n";
-    while ($self->{_estado} == "BLOQUEADO") {
-        print "\n Me voy a dormir: $self->{_proceso_id} \n";
+    while ($self->{_estado} eq "BLOQUEADO") {
+        print "\n ESTOY DORMIDO CHICOS: $self->{_proceso_id} \n";
         sleep 1;
     }
 }

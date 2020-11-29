@@ -60,7 +60,7 @@ my $cpu_semaforo = Thread::Semaphore->new();
 my $monitor_semaforo = Thread::Semaphore->new();
 my $ciclo_siguiente_semaforo = Thread::Semaphore->new();
 my $ciclo_siguiente_sumar_semaforo = Thread::Semaphore->new();
-my $procesos_finalizados :shared = 2;
+my $procesos_finalizados :shared = 1;
 $ciclo_siguiente_semaforo->down();
 
 # Primero monitorea, luego cicla el CPU
@@ -72,14 +72,14 @@ my $cpu_2 = Cpu->new($procesos_finalizados, $ciclo_siguiente_semaforo, $ciclo_si
 
 my $cola_procesadores = Thread::Queue->new();
 $cola_procesadores->enqueue( $cpu_1 );
-$cola_procesadores->enqueue( $cpu_2 );
+# $cola_procesadores->enqueue( $cpu_2 );
 
 # Planificador / Despachador
-my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0);
+my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cola_ejecutando);
 my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_procesadores);
 
 # Creacion instancia OS / DB
-my $os_instance = Os->new( $cola_listos );
+my $os_instance = Os->new( $cola_listos, $cola_procesadores );
 my $base_datos = Db->new('DB1', 100000000, $escribir_mutex, $sumar_mutex, $contador_lectores, $os_instance);
 
 my $cola_db = Thread::Queue->new();
@@ -89,19 +89,17 @@ $cola_db->enqueue( $base_datos );
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    # $cola_nuevos->enqueue( Lector->new(2, 2, "P0", "NUEVO", 90) ); # Termina en 4
-    $cola_nuevos->enqueue( Lector->new(1, 9, "P1", "NUEVO", 5, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Lector->new(2, 2, "P2", "NUEVO", 6, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Escritor->new(3, 1, "P3", "NUEVO", 8, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
-    $cola_nuevos->enqueue( Lector->new(3, 3, "P4", "NUEVO", 7, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
-    $cola_nuevos->enqueue( Escritor->new(5, 1, "P6", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
-    $cola_nuevos->enqueue( Escritor->new(7, 1, "P7", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
-    $cola_nuevos->enqueue( Escritor->new(8, 1, "P8", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
-    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P4", "NUEVO", 60) );
-    # $cola_nuevos->enqueue( Lector->new(4,1, "P5", "NUEVO", 80) );
-    # $cola_nuevos->enqueue( Escritor->new(6,2, "P4", "NUEVO", 100) );
-    # $cola_nuevos->enqueue( Lector->new(12,5, "P4", "NUEVO", 40) );
-    # $cola_nuevos->enqueue( Lector->new(22,5, "P5", "NUEVO", 8) );
+    $cola_nuevos->enqueue( Lector->new(0, 5, "P0", "NUEVO", 90, $ciclo_siguiente_sumar_semaforo) ); # Termina en 4
+    #$cola_nuevos->enqueue( Lector->new(1, 9, "P1", "NUEVO", 5, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    #$cola_nuevos->enqueue( Lector->new(2, 1, "P2", "NUEVO", 6, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    $cola_nuevos->enqueue( Escritor->new(1, 1, "P3", "NUEVO", 8, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    #$cola_nuevos->enqueue( Escritor->new(1, 4, "P4", "NUEVO", 8, $ciclo_siguiente_sumar_semaforo ) );
+    #$cola_nuevos->enqueue( Escritor->new(1, 4, "P5", "NUEVO", 8, $ciclo_siguiente_sumar_semaforo ) );
+    # $cola_nuevos->enqueue( Lector->new(3, 3, "P4", "NUEVO", 7, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 4 y termina en 6
+    # $cola_nuevos->enqueue( Escritor->new(5, 1, "P6", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    # $cola_nuevos->enqueue( Escritor->new(7, 1, "P7", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    # $cola_nuevos->enqueue( Escritor->new(8, 1, "P8", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) ); # Empieza en 6 y termina en 8
+    # $cola_nuevos->enqueue( Escritor->new(3, 1, "P8", "NUEVO", 9, $ciclo_siguiente_sumar_semaforo ) );
 }
 
 =pod
@@ -141,17 +139,9 @@ sub simular() {
                 }
             })->detach();
 
-            threads->create(sub {
-                if ( ref $cola_procesadores->peek(1)->proceso_instancia() ) {
-                    $cola_procesadores->peek(1)->ejecutar($db_instancia);
-                } else {
-                    $cola_procesadores->peek(1)->cambiar_ocioso();
-                }
-            })->detach();
-
-            # print "ANTES";
+            # print "ANTES \n";
             $ciclo_siguiente_semaforo->down();
-            # print "DESPUES";
+            # print "DESPUES \n";
 
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
@@ -198,7 +188,7 @@ sub simular() {
 
     # Hilo 3 - Interaccion principal
     while(1) {
-        system("clear");
+        # system("clear");
         print "Using threads.pm version $threads::VERSION\n";
         print "=====================================\n";
         print "== PLANIFICADOR CPU - SIMULADOR 🤖 ==\n";

@@ -42,33 +42,59 @@ sub leer_db() {
     my ( $self, $proceso ) = @_;
 
     $self->{_os}->asignar_proceso( $proceso );
-    $self->{_os}->semWait( $self->{_sumar_mutex} );
-    $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
 
-    if($self->{_contador_lectores} == 1) {
-        $self->{_os}->semWait( $self->{_escribir_mutex} );
+    # TODO:
+    if ( $proceso->contar_ejecuciones() == 0 ) {
+        $self->{_os}->semWait( $self->{_sumar_mutex} );
+        $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
+        if($self->{_contador_lectores} == 1) {
+            $self->{_os}->semWait( $self->{_escribir_mutex} );
+        }
+
+        $self->{_os}->semSignal( $self->{_sumar_mutex} );
     }
-    $self->{_os}->semSignal( $self->{_escribir_mutex} );
+    # Termina: zona critica
 
-    $self->{_os}->semWait( $self->{_sumar_mutex} );
-    $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
+    # print "\n LEYENDO \n";
+    # sleep 10;
+    # print "\n TERMINE LEYENDO \n";
 
-    if($self->{_contador_lectores} == 0) {
-        $self->{_escribir_mutex}->up();
+    # TODO:
+    if ( $proceso->tiempo_servicio() == 0 ) {
+        $self->{_os}->asignar_proceso( $proceso );
+        $self->{_os}->semWait( $self->{_sumar_mutex} );
+
+        $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
+
+        if($self->{_contador_lectores} == 0) {
+            $self->{_os}->asignar_proceso( $proceso );
+            $self->{_os}->semSignal( $self->{_escribir_mutex} );
+            print "\n TERMINE DE LEER \n";
+        }
+
+        $self->{_os}->semSignal( $self->{_sumar_mutex} );
     }
 
-    $self->{_os}->semSignal( $self->{_sumar_mutex} );
 }
 
 sub grabar_db() {
     my ($self, $proceso) = @_;
 
-    $self->{_os}->asignar_proceso( $proceso );
-    $self->{_os}->semWait( $self->{_escribir_mutex} );
+    if ( $proceso->contar_ejecuciones() == 0 ) {
+        $self->{_os}->asignar_proceso( $proceso );
+        $self->{_os}->semWait( $self->{_escribir_mutex} );
+    }
 
-    $self->{_cantidad_disponible} += $proceso->{_cantidad};
+    # $self->{_cantidad_disponible} += $proceso->{_cantidad};
+    # print "\n GRABAR MUTEX ESCRITOR $self->{_contador_lectores} $self->{_escribir_mutex}->{_count} \n";
+    # print "\n ESCRIBIENDO \n";
+    # sleep 10;
+    # print "\n TERMINO ESCRIBIENDO \n";
 
-    $self->{_os}->semSignal( $self->{_escribir_mutex} );
+    if ( $proceso->tiempo_servicio() == 0 ) {
+        $self->{_os}->asignar_proceso( $proceso );
+        $self->{_os}->semSignal( $self->{_escribir_mutex} );
+    }
 }
 
 sub print_disponible() {

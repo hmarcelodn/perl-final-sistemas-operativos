@@ -14,6 +14,7 @@ sub new {
         _nuevos => shift,
         _listos => shift,
         _ciclos => shift,
+        _ejecutando => shift,
     };
 
     bless $self, $class;
@@ -22,13 +23,12 @@ sub new {
 }
 
 =pod
-Planificar el siguiente proceso mediante FIFO
+Planificar el siguiente proceso mediante RR=1
 Verificar que proceso de la cola _nuevos deben pasar a la cola de listos
 =cut
 sub planificar() {
     my ( $self ) = @_;
 
-    # lock($self->{_nuevos});
     my @nuevos = ();
 
     # Planificar procesos nuevos y moverlos a listos si cumple el tiempo de llegada
@@ -37,6 +37,7 @@ sub planificar() {
         my $ciclo_actual = $self->{_ciclos};
         my $proceso_nuevo_llegada = $proceso_nuevo->llegada();
         if ( $ciclo_actual == $proceso_nuevo->llegada() ) {
+            $proceso_nuevo->asignar_quantum(2);
             $self->{_listos}->enqueue($proceso_nuevo);
         } else {
             push( @nuevos, $proceso_nuevo );
@@ -46,6 +47,20 @@ sub planificar() {
     # Encolar los procesos nuevos que no pueden entrar a la cola de listos aun
     foreach ( @nuevos ) {
         $self->{_nuevos}->enqueue( $_ );
+    }
+
+    # Acomodar la cola de listos por quantums
+    if ( $self->{_ejecutando}->pending() > 0 ) {
+        my $proceso_ejecutando = $self->{_ejecutando}->peek(0);
+
+        # Si el proceso termino sus quantums, renovarlos y mandar el proceso al final de la cola de listos para darle tiempo de proceso a los demas
+        if ( $proceso_ejecutando->tiempo_servicio() == 0 ) {
+            $self->{_ejecutando}->dequeue_nb();
+        } elsif ( $proceso_ejecutando->contar_quantums() == 0 ) {
+            $proceso_ejecutando = $self->{_ejecutando}->dequeue_nb();
+            $proceso_ejecutando->asignar_quantum(2);
+            $self->{_listos}->enqueue( $proceso_ejecutando );
+        }
     }
 
     return $self->{_ciclos};

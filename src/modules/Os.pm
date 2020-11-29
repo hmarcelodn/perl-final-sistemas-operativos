@@ -5,12 +5,15 @@ package Os;
 use strict;
 use warnings;
 
+use threads::shared;
+
 sub new {
     my $class = shift;
 
     my $self = {
-        _listos        => shift,
-        _proceso       => undef,
+        _listos                      => shift,
+        _proceso                     => undef,
+        _cola_procesadores           => shift,
     };
 
     bless $self, $class;
@@ -20,22 +23,29 @@ sub new {
 
 sub asignar_proceso() {
     my ( $self, $proceso ) = @_;
+
     $self->{_proceso} = $proceso;
-
-    # my $pepe2 = $proceso->proceso_id();
-
-    # print "\n Existe PROCESO en ASIGNAR??: $pepe2 \n";
-    # my $pepe = $self->{_proceso}->proceso_id();
-    # print "\n Existe PROCESO GRABADO??: $pepe \n";
 }
 
 sub semWait() {
     my ( $self, $semaforo ) = @_;
-    my $sem_value= $semaforo->contar();
-    # print " \n Semaforo contar en OS semWait: $pepe5 \n";
 
     $semaforo->down();
-    if ( $sem_value < 0 ) {
+
+    if ( $semaforo->contar() < 0 ) {
+        print "DURMIENDO PROCESO! \n";
+        print $self->{_proceso};
+
+        # Libero el procesador del proceso bloqueado
+        for (my $i = 0; $i < $self->{_cola_procesadores}->pending(); $i++) {
+            my $cpu = $self->{_cola_procesadores}->peek( $i );
+            if ( $cpu->proceso_asignado() eq $self->{_proceso}->proceso_id() ) {
+                print "\n LIBERO PROCESADOR \n";
+                $cpu->cambiar_libre();
+            }
+        }
+
+        # Duerme con espera activa el proceso
         $semaforo->dormir_proceso( $self->{_proceso} );
     }
 }
@@ -45,12 +55,14 @@ sub semSignal() {
     my ( $self, $semaforo ) = @_;
 
     $semaforo->up();
-    my $cant = $semaforo->contar();
 
-    if ( $cant < 0 ) {
+    if ( $semaforo->contar() <= 0 ) {
+        print "DESPERTAR PROCESO \n";
         my $proceso_listo = $semaforo->despertar_proceso();
-        $proceso_listo->cambiar_a_listo();
-        $self->{_listos}->enqueue( $proceso_listo );
+        print $proceso_listo;
+        $self->{_cola_procesadores}->peek(0)->asignar( $proceso_listo );
+
+        $proceso_listo->cambiar_a_ejecutando();
     }
 }
 

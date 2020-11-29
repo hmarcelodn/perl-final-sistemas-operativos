@@ -83,12 +83,12 @@ sub imprimir_estado_colas() {
 
     print "\n\n\n\n";
     print "-----------------------------------\n";
-    print "COLA: Escritores  Bloqueados \n";
+    print "COLA: ESCRITORES \n";
     print "-----------------------------------\n";
     print "Proceso      Llegada     Servicio\n";
     print "-----------------------------------\n";
     my $proceso_bloq_indice = 0;
-    if ($self->{_escribir_mutex}->contar() > 0) {
+    if ($self->{_escribir_mutex}->contar_items() > 0) {
         while ($proceso_bloq_indice < $procesos_encolados_write) {
             my $proceso_bloq = $self->{_escribir_mutex}->{_items}->peek($proceso_nuevo_indice);
             my $proceso_id_bloq = $proceso_bloq->proceso_id();

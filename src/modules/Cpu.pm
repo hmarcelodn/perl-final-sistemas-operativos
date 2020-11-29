@@ -65,9 +65,7 @@ sub cambiar_libre() {
     $self->{_ciclo_siguiente_sumar_semaforo}->down();
     $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
 
-    # print "cambiar_libre";
-
-    if ( $self->{_procesos_finalizados} == 2 ) {
+    if ( $self->{_procesos_finalizados} == 1 ) {
         $self->{_ciclo_siguiente_semaforo}->up();
     }
 
@@ -87,8 +85,6 @@ sub cambiar_ocupado() {
 sub cambiar_ocioso() {
     my ( $self ) = @_;
 
-    # print "cambiar_ocioso";
-
     $self->{_ciclo_siguiente_sumar_semaforo}->down();
     $self->{_procesos_finalizados} = $self->{_procesos_finalizados} - 1;
     $self->{_ciclo_siguiente_sumar_semaforo}->up();
@@ -96,7 +92,7 @@ sub cambiar_ocioso() {
     $self->{_ciclo_siguiente_sumar_semaforo}->down();
     $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
 
-    if ( $self->{_procesos_finalizados} == 2 ) {
+    if ( $self->{_procesos_finalizados} == 1 ) {
         $self->{_ciclo_siguiente_semaforo}->up();
     }
 
@@ -110,20 +106,23 @@ sub ejecutar() {
     if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
         $self->cambiar_ocupado();
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
+        $self->{_proceso}->descontar_quantum();
         $self->{_proceso}->ejecutar($dba);
+        $self->{_proceso}->sumar_ejecuciones();
 
-        my $cant = $self->{_proceso}->tiempo_servicio();
-
-        if ( $cant == 0 ) {
+        if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
             $self->{_proceso} = undef;
+        } elsif ( $self->{_proceso}->contar_quantums() == 0 ) {
+            $self->{_proceso}->cambiar_a_listo();
+            $self->cambiar_libre();
+            $self->{_proceso} = undef;
         } else {
-            # TODO: Cambiar libre refactor
             $self->{_ciclo_siguiente_sumar_semaforo}->down();
             $self->{_procesos_finalizados} = $self->{_procesos_finalizados} + 1;
 
-            if ( $self->{_procesos_finalizados} == 2 ) {
+            if ( $self->{_procesos_finalizados} == 1 ) {
                 $self->{_ciclo_siguiente_semaforo}->up();
             }
 

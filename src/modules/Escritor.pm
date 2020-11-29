@@ -24,6 +24,7 @@ Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
     my ( $self, $dba ) = @_;
+
     $dba->grabar_db($self);
 }
 
