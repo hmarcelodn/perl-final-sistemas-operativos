@@ -24,14 +24,20 @@ Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-
+    # print "\n Ejecuciones de Lectura" . $self->contar_ejecuciones() . "\n";
     if ( $self->contar_ejecuciones() == 0 ) {
+        $self->obtener_os()->asignar_proceso( $self );
         $self->obtener_os()->semWait( $self->obtener_sumar_mutex() );
+
         $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
+        print "Contador Lectores" . $self->{_contador_lectores} ."\n";
+
         if($self->{_contador_lectores} == 1) {
+            print "Escribir \n";
+            $self->obtener_os()->asignar_proceso( $self );
             $self->obtener_os()->semWait( $self->obtener_escribir_mutex() );
         }
-
+        $self->obtener_os()->asignar_proceso( $self );
         $self->obtener_os()->semSignal( $self->obtener_sumar_mutex() );
     }
 
@@ -45,6 +51,7 @@ sub ejecutar() {
         $self->obtener_os()->semWait( $self->obtener_sumar_mutex() );
 
         $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
+        print "Contador Lectores resto" . $self->{_contador_lectores} ."\n";
 
         if($self->{_contador_lectores} == 0) {
             $self->obtener_os()->asignar_proceso( $self );

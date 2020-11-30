@@ -93,9 +93,9 @@ Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
     # $cola_nuevos->enqueue( Escritor->new(1, 50, "P1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
-    $cola_nuevos->enqueue( Lector->new(1, 10, "P2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
-    $cola_nuevos->enqueue( Lector->new(1, 10, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
-    $cola_nuevos->enqueue( Lector->new(1, 10, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
+    $cola_nuevos->enqueue( Lector->new(1, 3, "P2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $contador_lectores  ) );
+    $cola_nuevos->enqueue( Lector->new(1, 3, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $contador_lectores  ) );
+    $cola_nuevos->enqueue( Lector->new(1, 3, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $contador_lectores  ) );
     # $cola_nuevos->enqueue( Escritor->new(1, 5, "P2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );
     # $cola_nuevos->enqueue( Escritor->new(1, 5, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );
     # $cola_nuevos->enqueue( Escritor->new(1, 5, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );

@@ -27,6 +27,7 @@ sub new {
         _contador_lectores => shift,
     };
 
+
     bless $self, $class;
 
     return $self
@@ -158,9 +159,24 @@ sub sumar_tiempo_servicio() {
     $self->{_tiempo_servicio} = $self->{_tiempo_servicio} + 1;
 }
 
-sub obtener_contador_lectores() {
+sub decremento_contador_lectores() {
     my ( $self ) = @_;
 
+    $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
+    print "\n Contador de Lectores Restando: " . $self->{_contador_lectores} . "\n";
+}
+
+sub incremento_contador_lectores() {
+    my ( $self ) = @_;
+    print "\n Contador de Lectores Sumando antes: " . $self->{_contador_lectores} . "\n";
+
+    $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
+    print "\n Contador de Lectores Sumando: " . $self->{_contador_lectores} . "\n";
+
+}
+
+sub obtener_contador_lectores() {
+    my ( $self ) = @_;
     return $self->{_contador_lectores};
 }
 
