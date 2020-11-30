@@ -36,7 +36,7 @@ sub imprimir_estado_colas() {
     my $procesos_encolados_write = $self->{_escritores_bloqueados}->pending();
     my $procesos_bloqueados_lector = $self->{_lectores_bloqueados}->pending();
 
-    # system("clear");
+    system("clear");
 
     print "===================================================================\n";
     print "MONITOREANDO COLAS DE PLANIFICACION (presione Enter para salir...) \n";
@@ -64,7 +64,7 @@ sub imprimir_estado_colas() {
             $proceso_listo_indice = $proceso_listo_indice + 1;
         }
 
-        print "-----------------------------------\n";
+        # print "-----------------------------------\n";
     }
 
     print "\n\n";
@@ -84,7 +84,7 @@ sub imprimir_estado_colas() {
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
         }
 
-        print "-----------------------------------\n";
+        # print "\n-----------------------------------\n";
     }
 
     print "\n\n";
@@ -104,7 +104,7 @@ sub imprimir_estado_colas() {
             $proceso_bloq_indice = $proceso_bloq_indice + 1;
         }
 
-        print "-----------------------------------\n";
+        # print "\n-----------------------------------\n";
     }
 
     print "\n\n";
@@ -124,7 +124,7 @@ sub imprimir_estado_colas() {
             $proceso_lector_bloq_indice = $proceso_lector_bloq_indice + 1;
         }
 
-        print "-----------------------------------\n";
+        # print "\n-----------------------------------\n";
     }
 
     print "\n\n Presione Enter para salir... \n\n";
