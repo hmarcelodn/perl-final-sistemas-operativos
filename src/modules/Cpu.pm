@@ -59,6 +59,8 @@ sub estado() {
 sub cambiar_libre() {
     my ( $self, $proceso ) = @_;
     $self->{_estado} = "LIBRE";
+
+    $self->{_ciclo_siguiente_semaforo}->up();
 }
 
 # Modificar el estado del CPU a OCUPADO
@@ -84,17 +86,15 @@ sub ejecutar() {
         $self->{_proceso}->sumar_ejecuciones();
 
         if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
-            print "\n H1 \n";
+            # print "\n TERMINO SERVICIO \n";
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
             $self->{_proceso} = undef;
         } elsif ( $self->{_proceso}->contar_quantums() == 0 ) {
-            print "\n H2 \n";
+            # print "\n TERMINO QUANTUM \n";
             $self->{_proceso}->cambiar_a_listo();
             $self->cambiar_libre();
             $self->{_proceso} = undef;
-        } else {
-            print "\n H3 \n";
         }
 
         $self->{_ciclo_siguiente_semaforo}->up();

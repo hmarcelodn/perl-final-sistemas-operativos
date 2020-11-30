@@ -21,6 +21,10 @@ sub new {
         _ciclo_siguiente_semaforo => shift,
         _quantum         => 0,
         _ejecuciones     => 0,
+        _os              => shift,
+        _escribir_mutex  => shift,
+        _sumar_mutex     => shift,
+        _contador_lectores => shift,
     };
 
     bless $self, $class;
@@ -113,12 +117,6 @@ Modifica el estado interno del servicio a BLOQUEADO
 sub cambiar_a_bloqueado() {
     my ( $self ) = @_;
     $self->{_estado} = "BLOQUEADO";
-
-    # Bloqueo el hilo
-    while ($self->{_estado} eq "BLOQUEADO") {
-        print "\n ESTOY DORMIDO CHICOS: $self->{_proceso_id} \n";
-        sleep 1;
-    }
 }
 
 =pod
@@ -128,6 +126,42 @@ Devuelve la cantidad a leer / escribir
 sub get_cantidad() {
     my ( $self ) = @_;
     return $self ->{_cantidad};
+}
+
+sub obtener_os() {
+    my ( $self ) = @_;
+
+    return $self ->{_os};
+}
+
+sub obtener_escribir_mutex() {
+    my ( $self ) = @_;
+
+    return $self ->{_escribir_mutex};
+}
+
+sub obtener_sumar_mutex() {
+    my ( $self ) = @_;
+
+    return $self ->{_sumar_mutex};
+}
+
+sub descontar_tiempo_servicio() {
+    my ( $self ) = @_;
+
+    $self->{_tiempo_servicio} = $self->{_tiempo_servicio} - 1;
+}
+
+sub sumar_tiempo_servicio() {
+    my ( $self ) = @_;
+
+    $self->{_tiempo_servicio} = $self->{_tiempo_servicio} + 1;
+}
+
+sub obtener_contador_lectores() {
+    my ( $self ) = @_;
+
+    return $self->{_contador_lectores};
 }
 
 1;

@@ -33,6 +33,11 @@ my $contador_lectores :shared = 0;
 my $escribir_mutex = Semaforo->new('escribir_mutex', 1);
 my $sumar_mutex = Semaforo->new('sumar_mutex', 1);
 
+my $cola_escribir_mutex = Thread::Queue->new();
+my $cola_sumar_mutex = Thread::Queue->new();
+$cola_escribir_mutex->enqueue( $escribir_mutex );
+$cola_sumar_mutex->enqueue( $sumar_mutex );
+
 # Colas Planificacion de corto plazo
 my $cola_listos = Thread::Queue->new();
 my $cola_ejecutando = Thread::Queue->new();
@@ -45,7 +50,7 @@ my $cola_nuevos = Thread::Queue->new();
 my $cola_salida = Thread::Queue->new();
 
 # Instancia del monitor
-my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $escribir_mutex, $sumar_mutex);
+my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $contador_lectores);
 
 # Reloj CPU
 my $ciclos :shared = 0;
@@ -70,16 +75,16 @@ my $cpu_2 = Cpu->new($ciclo_siguiente_semaforo );
 
 my $cola_procesadores = Thread::Queue->new();
 $cola_procesadores->enqueue( $cpu_1 );
-# $cola_procesadores->enqueue( $cpu_2 );
 
 # Planificador / Despachador
 my $planificador = Planificador->new($cola_nuevos, $cola_listos, 0, $cola_ejecutando);
 my $despachador = Despachador->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_procesadores);
 
 # Creacion instancia OS / DB
-my $os_instance = Os->new( $cola_listos, $cola_procesadores );
-my $base_datos = Db->new('DB1', 100000000, $escribir_mutex, $sumar_mutex, $contador_lectores, $os_instance);
+my $os_instance = Os->new( $cola_listos, $cola_procesadores, $cola_ejecutando );
 
+# TODO: Borrar
+my $base_datos = Db->new('DB1', 100000000, $escribir_mutex, $sumar_mutex, $contador_lectores, $os_instance);
 my $cola_db = Thread::Queue->new();
 $cola_db->enqueue( $base_datos );
 
@@ -87,8 +92,14 @@ $cola_db->enqueue( $base_datos );
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Escritor->new(1, 3, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo ) );
-    $cola_nuevos->enqueue( Escritor->new(1, 2, "P5", "NUEVO", 8, $ciclo_siguiente_semaforo ) );
+    # $cola_nuevos->enqueue( Escritor->new(1, 50, "P1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
+    $cola_nuevos->enqueue( Lector->new(1, 10, "P2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
+    $cola_nuevos->enqueue( Lector->new(1, 10, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
+    $cola_nuevos->enqueue( Lector->new(1, 10, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)  ) );
+    # $cola_nuevos->enqueue( Escritor->new(1, 5, "P2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );
+    # $cola_nuevos->enqueue( Escritor->new(1, 5, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );
+    # $cola_nuevos->enqueue( Escritor->new(1, 5, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );
+    # $cola_nuevos->enqueue( Escritor->new(1, 5, "P5", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0)   ) );
 }
 
 =pod
@@ -128,9 +139,9 @@ sub simular() {
                 }
             })->detach();
 
-            print "ANTES \n";
+            print "\n ANTES \n";
             $ciclo_siguiente_semaforo->down();
-            print "DESPUES \n";
+            print "\n DESPUES \n";
 
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;

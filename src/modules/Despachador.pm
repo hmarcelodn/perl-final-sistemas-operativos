@@ -29,8 +29,8 @@ Tomar proceso de la cola de listos, si el CPU se encuentra LIBRE y asignarle/des
 sub despachar() {
     my ( $self ) = @_;
 
-    my $cantidad_procesadores = $self->{_cola_cpus}->pending();
-    my $procesador_actual = 0;
+    # my $cantidad_procesadores = $self->{_cola_cpus}->pending();
+    # my $procesador_actual = 0;
     my $cpu = $self->{_cola_cpus}->peek(0);
 
     if ( $self->{_listos}->pending() > 0 && $cpu->estado() eq "LIBRE" ) {
@@ -41,7 +41,7 @@ sub despachar() {
         $self->{_ejecutando}->enqueue($proceso_ejecucion);
     }
 
-    $procesador_actual = $procesador_actual + 1;
+    # $procesador_actual = $procesador_actual + 1;
 }
 
 1;

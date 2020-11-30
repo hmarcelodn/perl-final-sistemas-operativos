@@ -50,6 +50,9 @@ sub planificar() {
     }
 
     # Acomodar la cola de listos por quantums
+
+    # print "".$self->{_ejecutando}->pending()." \n";
+
     if ( $self->{_ejecutando}->pending() > 0 ) {
         my $proceso_ejecutando = $self->{_ejecutando}->peek(0);
 

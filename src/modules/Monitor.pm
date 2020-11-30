@@ -16,6 +16,7 @@ sub new() {
         _salida     => shift,
         _escribir_mutex => shift,
         _sumar_mutex => shift,
+        _contador_lectores => shift,
     };
 
     bless $self, $class;
@@ -30,9 +31,9 @@ sub imprimir_estado_colas() {
     my ( $self, $ciclos, $proceso_id, $estado_cpu ) = @_;
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
-    my $procesos_encolados_write = $self->{_escribir_mutex}->contar();
+    my $procesos_encolados_write = $self->{_escribir_mutex}->contar_items();
 
-    # system("clear");
+    system("clear");
 
     print "===================================================================\n";
     print "MONITOREANDO COLAS DE PLANIFICACION (presione Enter para salir...) \n";
@@ -41,7 +42,10 @@ sub imprimir_estado_colas() {
     print "+ PROCESOS NUEVOS: ".$procesos_nuevos_pendientes." \n";
     print "+ PROCESOS LISTOS: ".$procesos_listos_pendientes." \n";
     print "+ ESTADO DEL PROCESADOR: ".$estado_cpu." \n";
-    print "+ ULTIMO PROCESO EN EJECUCION: ".$proceso_id." \n\n";
+    print "+ ULTIMO PROCESO EN EJECUCION: ".$proceso_id." \n";
+    print "+ CANTIDAD DE ESCRITORES ESPERANDO: ".$procesos_encolados_write." \n";
+    print "+ CANTIDAD DE LECTORES ESPERANDO: \n";
+    print "+ CANTIDAD DE LECTORES LEYENDO: ".$self->{_contador_lectores}." \n\n";
     print "-----------------------------------\n";
     print "COLA: LISTOS\n";
     print "-----------------------------------\n";
@@ -90,7 +94,7 @@ sub imprimir_estado_colas() {
     my $proceso_bloq_indice = 0;
     if ($self->{_escribir_mutex}->contar_items() > 0) {
         while ($proceso_bloq_indice < $procesos_encolados_write) {
-            my $proceso_bloq = $self->{_escribir_mutex}->{_items}->peek($proceso_nuevo_indice);
+            my $proceso_bloq = $self->{_escribir_mutex}->{_items}->peek($proceso_bloq_indice);
             my $proceso_id_bloq = $proceso_bloq->proceso_id();
             my $proceso_llegada_bloq = $proceso_bloq->llegada();
             my $proceso_servicio_bloq = $proceso_bloq->tiempo_servicio();

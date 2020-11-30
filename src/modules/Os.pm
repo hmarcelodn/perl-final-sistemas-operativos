@@ -14,6 +14,7 @@ sub new {
         _listos                      => shift,
         _proceso                     => undef,
         _cola_procesadores           => shift,
+        _cola_ejecucion              => shift,
     };
 
     bless $self, $class;
@@ -33,19 +34,15 @@ sub semWait() {
     $semaforo->down();
 
     if ( $semaforo->contar() < 0 ) {
-        print "\n DURMIENDO PROCESO! \n";
-        print $self->{_proceso};
+        # print "\n DURMIENDO PROCESO! \n";
 
         # Libero el procesador del proceso bloqueado
-        for (my $i = 0; $i < $self->{_cola_procesadores}->pending(); $i++) {
-            my $cpu = $self->{_cola_procesadores}->peek( $i );
-            if ( $cpu->proceso_asignado() eq $self->{_proceso}->proceso_id() ) {
-                print "\n LIBERO PROCESADOR \n";
-                $cpu->cambiar_libre();
-            }
-        }
+        my $cpu = $self->{_cola_procesadores}->peek( 0 );
 
-        # Duerme con espera activa el proceso
+        # Primero duermo al CPU y luego duermo al proceso (queda bloqueado)
+        $cpu->cambiar_libre();
+        $self->{_cola_ejecucion}->dequeue_nb();
+        $self->{_proceso}->sumar_tiempo_servicio();
         $semaforo->dormir_proceso( $self->{_proceso} );
     }
 }
@@ -57,12 +54,10 @@ sub semSignal() {
     $semaforo->up();
 
     if ( $semaforo->contar() <= 0 ) {
-        print "\n DESPERTAR PROCESO \n";
+        # Desencolar la cola de ocupados del semaforo
         my $proceso_listo = $semaforo->despertar_proceso();
-        print $proceso_listo;
-        $self->{_cola_procesadores}->peek(0)->asignar( $proceso_listo );
-
-        $proceso_listo->cambiar_a_ejecutando();
+        $proceso_listo->cambiar_a_listo();
+        $self->{_listos}->enqueue( $proceso_listo );
     }
 }
 

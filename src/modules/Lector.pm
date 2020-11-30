@@ -12,7 +12,7 @@ our @ISA = qw(Proceso);    # inherits from Proceso
 
 sub new {
     my ($class) = @_;
-    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6] );
+    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6], $_[7], $_[8], $_[9], $_[10] );
 
     bless $self, $class;
 
@@ -24,8 +24,36 @@ Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
     my ( $self, $dba ) = @_;
-    $dba->leer_db($self);
-    # print "CPU PROCESO LECTOR $self->{_proceso_id} ($self->{_estado}) - SERVICIO RESTANTE $self->{_tiempo_servicio} 🚀  \n";
+
+    if ( $self->contar_ejecuciones() == 0 ) {
+        $self->obtener_os()->semWait( $self->obtener_sumar_mutex() );
+        $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
+        if($self->{_contador_lectores} == 1) {
+            $self->obtener_os()->semWait( $self->obtener_escribir_mutex() );
+        }
+
+        $self->obtener_os()->semSignal( $self->obtener_sumar_mutex() );
+    }
+
+    print "\n LEYENDO \n";
+    # sleep 10;
+    # print "\n TERMINE LEYENDO \n";
+
+    # TODO:
+    if ( $self->tiempo_servicio() == 0 ) {
+        $self->obtener_os()->asignar_proceso( $self );
+        $self->obtener_os()->semWait( $self->obtener_sumar_mutex() );
+
+        $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
+
+        if($self->{_contador_lectores} == 0) {
+            $self->obtener_os()->asignar_proceso( $self );
+            $self->obtener_os()->semSignal( $self->obtener_escribir_mutex() );
+        }
+
+        $self->obtener_os()->asignar_proceso( $self );
+        $self->obtener_os()->semSignal( $self->obtener_sumar_mutex() );
+    }
 }
 
 1;
