@@ -25,6 +25,8 @@ sub new {
         _escribir_mutex  => shift,
         _sumar_mutex     => shift,
         _contador_lectores => shift,
+        _cola_lectores     => shift,
+        _cola_escritores   => shift,
     };
 
 
@@ -37,6 +39,12 @@ sub sumar_ejecuciones() {
     my ( $self, $quantum ) = @_;
 
     $self->{_ejecuciones} = $self->{_ejecuciones} + 1;
+}
+
+sub restar_ejecuciones() {
+    my ( $self, $quantum ) = @_;
+
+    $self->{_ejecuciones} = $self->{_ejecuciones} - 1;
 }
 
 sub contar_ejecuciones() {
@@ -144,7 +152,7 @@ sub obtener_escribir_mutex() {
 sub obtener_sumar_mutex() {
     my ( $self ) = @_;
 
-    return $self ->{_sumar_mutex};
+    return $self->{_sumar_mutex};
 }
 
 sub descontar_tiempo_servicio() {

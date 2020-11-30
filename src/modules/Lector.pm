@@ -12,7 +12,7 @@ our @ISA = qw(Proceso);    # inherits from Proceso
 
 sub new {
     my ($class) = @_;
-    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6], $_[7], $_[8], $_[9], $_[10] );
+    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6], $_[7], $_[8], $_[9], $_[10], $_[11], $_[12] );
 
     bless $self, $class;
 
@@ -23,43 +23,23 @@ sub new {
 Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
-    my ( $self, $dba ) = @_;
-    # print "\n Ejecuciones de Lectura" . $self->contar_ejecuciones() . "\n";
-    if ( $self->contar_ejecuciones() == 0 ) {
-        $self->obtener_os()->asignar_proceso( $self );
-        $self->obtener_os()->semWait( $self->obtener_sumar_mutex() );
+    my ( $self ) = @_;
 
-        $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
-        print "Contador Lectores" . $self->{_contador_lectores} ."\n";
+    # print "\n LECTORES: ".$self->{_cola_lectores}->pending()." ESCRITORES: ".$self->{_cola_escritores}->pending()." $self->{_proceso_id} \n";
 
-        if($self->{_contador_lectores} == 1) {
-            print "Escribir \n";
-            $self->obtener_os()->asignar_proceso( $self );
-            $self->obtener_os()->semWait( $self->obtener_escribir_mutex() );
-        }
-        $self->obtener_os()->asignar_proceso( $self );
-        $self->obtener_os()->semSignal( $self->obtener_sumar_mutex() );
-    }
-
-    print "\n LEYENDO \n";
-    # sleep 10;
-    # print "\n TERMINE LEYENDO \n";
-
-    # TODO:
-    if ( $self->tiempo_servicio() == 0 ) {
-        $self->obtener_os()->asignar_proceso( $self );
-        $self->obtener_os()->semWait( $self->obtener_sumar_mutex() );
-
-        $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
-        print "Contador Lectores resto" . $self->{_contador_lectores} ."\n";
-
-        if($self->{_contador_lectores} == 0) {
-            $self->obtener_os()->asignar_proceso( $self );
-            $self->obtener_os()->semSignal( $self->obtener_escribir_mutex() );
+    # Si no hay ningun escritor entonces proceso los lectores, sino bloqueo al lector
+    if ( $self->{_cola_escritores}->pending() == 0 ) {
+        # Si recien comienza, lo encola junto a los escritores
+        if ( $self->contar_ejecuciones() == 0 ) {
+            $self->{_cola_lectores}->enqueue( $self );
         }
 
-        $self->obtener_os()->asignar_proceso( $self );
-        $self->obtener_os()->semSignal( $self->obtener_sumar_mutex() );
+        # Si ya termino, desencola el escritor
+        if ( $self->tiempo_servicio() == 0 ) {
+            $self->{_cola_lectores}->dequeue_nb();
+        }
+    } else {
+        $self->{_os}->bloquear_proceso_lector( $self );
     }
 }
 

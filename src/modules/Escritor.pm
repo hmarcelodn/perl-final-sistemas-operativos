@@ -12,7 +12,7 @@ our @ISA = qw(Proceso);    # inherits from Proceso
 
 sub new {
     my ($class) = @_;
-    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6], $_[7], $_[8], $_[9], $_[10] );
+    my $self = $class->SUPER::new( $_[1], $_[2], $_[3], $_[4], $_[5], $_[6], $_[7], $_[8], $_[9], $_[10], $_[11], $_[12] );
 
     bless $self, $class;
 
@@ -23,26 +23,27 @@ sub new {
 Ejecuta comportamiento de proceso
 =cut
 sub ejecutar() {
-    my ( $self, $dba ) = @_;
+    my ( $self ) = @_;
 
-    if ( $self->contar_ejecuciones() == 0 ) {
-        # print "PRIMER ESCRITURA \n";
-        $self->obtener_os()->asignar_proceso( $self );
-        $self->obtener_os()->semWait( $self->obtener_escribir_mutex() );
-    }
+    # print "\n LECTORES: ".$self->{_cola_lectores}->pending()." ESCRITORES: ".$self->{_cola_escritores}->pending()." $self->{_proceso_id} EJECU: ".$self->contar_ejecuciones()." \n";
+    if (
+        ($self->{_cola_lectores}->pending() == 0 && $self->{_cola_escritores}->pending() == 0 ) ||
+        ( $self->{_cola_escritores}->pending() == 1 && $self->{_cola_escritores}->peek(0)->proceso_id() eq $self->proceso_id() ) ) {
 
-    # $self->{_cantidad_disponible} += $proceso->{_cantidad};
-    # print "\n GRABAR MUTEX ESCRITOR $self->{_contador_lectores} $self->{_escribir_mutex}->{_count} \n";
-    # print "\n ESCRIBIENDO $self->{_proceso_id} \n";
-    # sleep 10;
+        # Si recien comienza, lo encola junto a los escritores
+        if ( $self->contar_ejecuciones() == 0 ) {
+            $self->{_cola_escritores}->enqueue( $self );
+        }
 
-    if ( $self->tiempo_servicio() == 0 ) {
-        # print "\n TERMINO ESCRITURA $self->{_proceso_id} \n";
-        $self->obtener_os()->asignar_proceso( $self );
-        $self->obtener_os()->semSignal( $self->obtener_escribir_mutex() );
-    }
+        # Si ya termino, desencola el escritor
+        if ( $self->tiempo_servicio() == 0 ) {
+            $self->{_cola_escritores}->dequeue_nb();
+        }
 
-    # $dba->grabar_db($self);
+     } else {
+        $self->{_os}->bloquear_proceso_escritor( $self );
+     }
+
 }
 
 1;

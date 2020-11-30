@@ -15,6 +15,8 @@ sub new {
         _proceso                     => undef,
         _cola_procesadores           => shift,
         _cola_ejecucion              => shift,
+        _cola_bloqueados_lectores               => shift,
+        _cola_bloqueados_escritores             => shift,
     };
 
     bless $self, $class;
@@ -28,37 +30,33 @@ sub asignar_proceso() {
     $self->{_proceso} = $proceso;
 }
 
-sub semWait() {
-    my ( $self, $semaforo ) = @_;
+sub bloquear_proceso_escritor() {
+    my ( $self, $proceso ) = @_;
 
-    $semaforo->down();
+    # print "BLOQUEANDO A UN ESCRITOR \n";
+    my $cpu = $self->{_cola_procesadores}->peek( 0 );
 
-    if ( $semaforo->contar() < 0 ) {
-        # print "\n DURMIENDO PROCESO! \n";
-
-        # Libero el procesador del proceso bloqueado
-        my $cpu = $self->{_cola_procesadores}->peek( 0 );
-
-        # Primero duermo al CPU y luego duermo al proceso (queda bloqueado)
-        $cpu->cambiar_libre();
-        $self->{_cola_ejecucion}->dequeue_nb();
-        $self->{_proceso}->sumar_tiempo_servicio();
-        $semaforo->dormir_proceso( $self->{_proceso} );
-    }
+    # Primero duermo al CPU y luego duermo al proceso (queda bloqueado)
+    $cpu->cambiar_libre();
+    $self->{_cola_ejecucion}->dequeue_nb();
+    $proceso->sumar_tiempo_servicio();
+    $proceso->restar_ejecuciones();
+    $proceso->cambiar_a_bloqueado();
+    $self->{_cola_bloqueados_escritores}->enqueue( $proceso );
 }
 
+sub bloquear_proceso_lector() {
+    my ( $self, $proceso ) = @_;
 
-sub semSignal() {
-    my ( $self, $semaforo ) = @_;
+    # print "BLOQUEANDO A UN LECTOR \n";
+    my $cpu = $self->{_cola_procesadores}->peek( 0 );
 
-    $semaforo->up();
-
-    if ( $semaforo->contar() <= 0 ) {
-        # Desencolar la cola de ocupados del semaforo
-        my $proceso_listo = $semaforo->despertar_proceso();
-        $proceso_listo->cambiar_a_listo();
-        $self->{_listos}->enqueue( $proceso_listo );
-    }
+    # Primero duermo al CPU y luego duermo al proceso (queda bloqueado)
+    $cpu->cambiar_libre();
+    $self->{_cola_ejecucion}->dequeue_nb();
+    $proceso->sumar_tiempo_servicio();
+    $proceso->cambiar_a_bloqueado();
+    $self->{_cola_bloqueados_lectores}->enqueue( $proceso );
 }
 
 1;

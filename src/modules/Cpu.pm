@@ -76,22 +76,22 @@ sub cambiar_ocioso() {
 
 # Ejecutar ciclo
 sub ejecutar() {
-    my ( $self, $dba ) = @_;
+    my ( $self ) = @_;
 
     if ( ref $self->{_proceso} && $self->{_proceso}->tiempo_servicio() > 0) {
         $self->cambiar_ocupado();
         $self->{_proceso}->{_tiempo_servicio} = $self->{_proceso}->tiempo_servicio() - 1;
         $self->{_proceso}->descontar_quantum();
-        $self->{_proceso}->ejecutar($dba);
+        $self->{_proceso}->ejecutar();
         $self->{_proceso}->sumar_ejecuciones();
 
         if ( $self->{_proceso}->tiempo_servicio() == 0 ) {
-            # print "\n TERMINO SERVICIO \n";
+            print "\n TERMINO SERVICIO \n";
             $self->{_proceso}->cambiar_a_finalizado();
             $self->cambiar_libre();
             $self->{_proceso} = undef;
         } elsif ( $self->{_proceso}->contar_quantums() == 0 ) {
-            # print "\n TERMINO QUANTUM \n";
+            print "\n TERMINO QUANTUM \n";
             $self->{_proceso}->cambiar_a_listo();
             $self->cambiar_libre();
             $self->{_proceso} = undef;
