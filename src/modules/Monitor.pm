@@ -10,10 +10,15 @@ Abstraccion que permite visualizar el estado de las colas en todo momento
 sub new() {
     my $class = shift;
     my $self = {
-        _nuevos => shift,
-        _listos => shift,
+        _nuevos     => shift,
+        _listos     => shift,
         _ejecutando => shift,
-        _salida => shift,
+        _salida     => shift,
+        # _escribir_mutex => shift,
+        # _sumar_mutex => shift,
+        _contador_lectores => shift,
+        _escritores_bloqueados => shift,
+        _lectores_bloqueados => shift,
     };
 
     bless $self, $class;
@@ -28,24 +33,49 @@ sub imprimir_estado_colas() {
     my ( $self, $ciclos, $proceso_id, $estado_cpu ) = @_;
     my $procesos_listos_pendientes = $self->{_listos}->pending();
     my $procesos_nuevos_pendientes = $self->{_nuevos}->pending();
+    my $procesos_encolados_write = $self->{_escritores_bloqueados}->pending();
+    my $procesos_bloqueados_lector = $self->{_lectores_bloqueados}->pending();
+    my $procesos_ejecutando_total = $self->{_ejecutando}->pending();
 
     system("clear");
 
     print "===================================================================\n";
     print "MONITOREANDO COLAS DE PLANIFICACION (presione Enter para salir...) \n";
-    print "===================================================================\n\n";
+    print "===================================================================\n";
     print "+ CPU CICLO ⏰ : ".$ciclos." \n";
     print "+ PROCESOS NUEVOS: ".$procesos_nuevos_pendientes." \n";
     print "+ PROCESOS LISTOS: ".$procesos_listos_pendientes." \n";
     print "+ ESTADO DEL PROCESADOR: ".$estado_cpu." \n";
-    print "+ ULTIMO PROCESO EN EJECUCION: ".$proceso_id." \n\n";
+    print "+ ULTIMO PROCESO EN EJECUCION: ".$proceso_id." \n";
+    print "+ CANTIDAD DE ESCRITORES ESPERANDO: ".$procesos_encolados_write." \n";
+    print "+ CANTIDAD DE LECTORES ESPERANDO: ".$procesos_bloqueados_lector." \n";
+    print "\n\n";
+
+    print "-----------------------------------\n";
+    print "COLA: EJECUTANDO \n";
+    print "-----------------------------------\n";
+    print "Proceso      Llegada     Servicio\n";
+    print "-----------------------------------\n";
+    my $proceso_ejecutando_indice = 0;
+    if ($self->{_ejecutando}->pending() > 0) {
+        while ($proceso_ejecutando_indice < $procesos_ejecutando_total) {
+            my $proceso_ejecutando = $self->{_ejecutando}->peek($proceso_ejecutando_indice);
+            my $proceso_id_ejec = $proceso_ejecutando->proceso_id();
+            my $proceso_llegada_ejec = $proceso_ejecutando->llegada();
+            my $proceso_servicio_ejec = $proceso_ejecutando->tiempo_servicio();
+            print "$proceso_id_ejec              $proceso_llegada_ejec            $proceso_servicio_ejec\n";
+            $proceso_ejecutando_indice = $proceso_ejecutando_indice + 1;
+        }
+    }
+
+    print "\n";
     print "-----------------------------------\n";
     print "COLA: LISTOS\n";
     print "-----------------------------------\n";
     print "Proceso      Llegada     Servicio\n";
     print "-----------------------------------\n";
     my $proceso_listo_indice = 0;
-    if ($procesos_listos_pendientes > 0) {
+    if ($self->{_listos}->pending() > 0) {
         while ($proceso_listo_indice < $procesos_listos_pendientes) {
             my $proceso_listo = $self->{_listos}->peek($proceso_listo_indice);
             my $proceso_id = $proceso_listo->proceso_id();
@@ -54,18 +84,16 @@ sub imprimir_estado_colas() {
             print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_listo_indice = $proceso_listo_indice + 1;
         }
-
-        print "-----------------------------------\n";
     }
 
-    print "\n\n\n\n";
+    print "\n";
     print "-----------------------------------\n";
     print "COLA: NUEVOS                     \n";
     print "-----------------------------------\n";
     print "Proceso      Llegada     Servicio\n";
     print "-----------------------------------\n";
     my $proceso_nuevo_indice = 0;
-    if ($procesos_nuevos_pendientes > 0) {
+    if ($self->{_nuevos}->pending() > 0) {
         while ($proceso_nuevo_indice < $procesos_nuevos_pendientes) {
             my $proceso_nuevo = $self->{_nuevos}->peek($proceso_nuevo_indice);
             my $proceso_id = $proceso_nuevo->proceso_id();
@@ -74,8 +102,42 @@ sub imprimir_estado_colas() {
             print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
         }
+    }
 
-        print "-----------------------------------\n";
+    print "\n";
+    print "-----------------------------------\n";
+    print "COLA: ESCRITORES \n";
+    print "-----------------------------------\n";
+    print "Proceso      Llegada     Servicio\n";
+    print "-----------------------------------\n";
+    my $proceso_bloq_indice = 0;
+    if ($self->{_escritores_bloqueados}->pending() > 0) {
+        while ($proceso_bloq_indice < $procesos_encolados_write) {
+            my $proceso_bloq = $self->{_escritores_bloqueados}->peek($proceso_bloq_indice);
+            my $proceso_id_bloq = $proceso_bloq->proceso_id();
+            my $proceso_llegada_bloq = $proceso_bloq->llegada();
+            my $proceso_servicio_bloq = $proceso_bloq->tiempo_servicio();
+            print "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
+            $proceso_bloq_indice = $proceso_bloq_indice + 1;
+        }
+    }
+
+    print "\n";
+    print "-----------------------------------\n";
+    print "COLA: LECTORES \n";
+    print "-----------------------------------\n";
+    print "Proceso      Llegada     Servicio\n";
+    print "-----------------------------------\n";
+    my $proceso_lector_bloq_indice = 0;
+    if ($self->{_lectores_bloqueados}->pending() > 0) {
+        while ($proceso_lector_bloq_indice < $procesos_bloqueados_lector) {
+            my $proceso_bloq = $self->{_lectores_bloqueados}->peek($proceso_lector_bloq_indice);
+            my $proceso_id_bloq = $proceso_bloq->proceso_id();
+            my $proceso_llegada_bloq = $proceso_bloq->llegada();
+            my $proceso_servicio_bloq = $proceso_bloq->tiempo_servicio();
+            print "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
+            $proceso_lector_bloq_indice = $proceso_lector_bloq_indice + 1;
+        }
     }
 
     print "\n\n Presione Enter para salir... \n\n";
