@@ -26,6 +26,9 @@ sub new {
     return $self;
 }
 
+=pod
+Planificar cola de bloqueados
+=cut
 sub planificar_mediano_plazo() {
     my ( $self ) = @_;
 

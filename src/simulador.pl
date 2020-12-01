@@ -28,39 +28,31 @@ use Cpu;
 use Monitor;
 use LogArchivo;
 use Os;
-use Semaforo;
 
-# Semaforos
-my $escribir_mutex = Semaforo->new('escribir_mutex', 1);
-my $sumar_mutex = Semaforo->new('sumar_mutex', 1);
-
+# Colas
 my $cola_escribir_mutex = Thread::Queue->new();
 my $cola_sumar_mutex = Thread::Queue->new();
 my $cola_contador_lectores = Thread::Queue->new();
 my $cola_escritores = Thread::Queue->new();
 my $cola_lectores = Thread::Queue->new();
-my $cola_bloqueados_escritores = Thread::Queue->new();
-my $cola_bloqueados_lectores = Thread::Queue->new();
-
-$cola_escribir_mutex->enqueue( $escribir_mutex );
-$cola_sumar_mutex->enqueue( $sumar_mutex );
 
 # Colas Planificacion de corto plazo
 my $cola_listos = Thread::Queue->new();
 my $cola_ejecutando = Thread::Queue->new();
 
 # Colas Planificacion de mediano plazo
-my $cola_bloqueados = Thread::Queue->new();
+my $cola_bloqueados_escritores = Thread::Queue->new();
+my $cola_bloqueados_lectores = Thread::Queue->new();
 
 # Colas Planificacion de largo plazo
 my $cola_nuevos = Thread::Queue->new();
 my $cola_salida = Thread::Queue->new();
 
 # Instancia del monitor
-my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_bloqueados_escritores, $cola_bloqueados_lectores);
+my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_contador_lectores, $cola_bloqueados_escritores, $cola_bloqueados_lectores);
 
 # Instancia del Log de Archivo
-my $log_archivo = LogArchivo->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_bloqueados_escritores, $cola_bloqueados_lectores);
+my $log_archivo = LogArchivo->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_contador_lectores, $cola_bloqueados_escritores, $cola_bloqueados_lectores);
 
 # Reloj CPU
 my $ciclos :shared = 0;
@@ -81,7 +73,6 @@ $cpu_semaforo->down();
 
 # CPU / Base de datos
 my $cpu_1 = Cpu->new($ciclo_siguiente_semaforo );
-my $cpu_2 = Cpu->new($ciclo_siguiente_semaforo );
 
 my $cola_procesadores = Thread::Queue->new();
 $cola_procesadores->enqueue( $cpu_1 );
@@ -97,31 +88,9 @@ my $os_instance = Os->new( $cola_listos, $cola_procesadores, $cola_ejecutando, $
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Escritor->new(0, 3, "E1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    $cola_nuevos->enqueue( Lector->new(0, 3, "L2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    $cola_nuevos->enqueue( Lector->new(0, 3, "L3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(1, 3, "L4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(1, 3, "L5", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(1, 3, "L6", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Escritor->new(1, 3, "E2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Escritor->new(1, 3, "E3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Escritor->new(1, 3, "E4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(1, 3, "L7", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(1, 3, "L8", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(1, 3, "L9", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Escritor->new(1, 3, "E5", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-
-    # $cola_nuevos->enqueue( Escritor->new(1, 3, "P1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-
-    #$cola_nuevos->enqueue( Escritor->new(1, 3, "P2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    #$cola_nuevos->enqueue( Escritor->new(1, 3, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    #$cola_nuevos->enqueue( Escritor->new(1, 3, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    #$cola_nuevos->enqueue( Escritor->new(1, 3, "P5", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    #$cola_nuevos->enqueue( Escritor->new(1, 3, "P6", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-
-    # $cola_nuevos->enqueue( Lector->new(2, 10, "P3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(3, 10, "P4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    # $cola_nuevos->enqueue( Lector->new(4, 10, "P5", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Escritor->new(0, 3, "E1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Lector->new(0, 3, "L2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Lector->new(0, 3, "L3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
 }
 
 =pod

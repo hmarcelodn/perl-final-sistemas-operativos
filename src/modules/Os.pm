@@ -24,12 +24,18 @@ sub new {
     return $self;
 }
 
+=pod
+Ceder control del proceso al SO
+=cut
 sub asignar_proceso() {
     my ( $self, $proceso ) = @_;
 
     $self->{_proceso} = $proceso;
 }
 
+=pod
+Pedirle al SO que bloquee un proceso escritor
+=cut
 sub bloquear_proceso_escritor() {
     my ( $self, $proceso ) = @_;
 
@@ -44,6 +50,9 @@ sub bloquear_proceso_escritor() {
     $self->{_cola_bloqueados_escritores}->enqueue( $proceso );
 }
 
+=pod
+Pedirle al SO que bloquee un proceso lector
+=cut
 sub bloquear_proceso_lector() {
     my ( $self, $proceso ) = @_;
 

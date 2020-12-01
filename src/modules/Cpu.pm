@@ -22,7 +22,9 @@ sub new {
     return $self
 }
 
-
+=pod
+Cierra Archivo
+=cut
 sub proceso_asignado() {
     my ( $self ) = @_;
 
@@ -33,6 +35,9 @@ sub proceso_asignado() {
     return "NINGUNO";
 }
 
+=pod
+Cierra Archivo
+=cut
 sub proceso_instancia() {
     my ( $self ) = @_;
 
@@ -43,19 +48,25 @@ sub proceso_instancia() {
     return undef;
 }
 
-# Utilizado por el dispatcher para asignar al CPU un nuevo proceso
+=pod
+Utilizado por el dispatcher para asignar al CPU un nuevo proceso
+=cut
 sub asignar() {
     my ( $self, $proceso ) = @_;
     $self->{_proceso} = $proceso;
 }
 
-# Obtener estado de CPU
+=pod
+Obtener estado de CPU
+=cut
 sub estado() {
     my ( $self, $proceso ) = @_;
     return $self->{_estado};
 }
 
-# Modificar el estado del CPU a LIBRE
+=pod
+Modificar el estado del CPU a LIBRE
+=cut
 sub cambiar_libre() {
     my ( $self, $proceso ) = @_;
     $self->{_estado} = "LIBRE";
@@ -63,18 +74,26 @@ sub cambiar_libre() {
     $self->{_ciclo_siguiente_semaforo}->up();
 }
 
-# Modificar el estado del CPU a OCUPADO
+=pod
+Modificar el estado del CPU a OCUPADO
+=cut
 sub cambiar_ocupado() {
     my ( $self, $proceso ) = @_;
     $self->{_estado} = "OCUPADO";
 }
 
+=pod
+Cierra Archivo
+=cut
 sub cambiar_ocioso() {
     my ( $self ) = @_;
     $self->{_ciclo_siguiente_semaforo}->up();
 }
 
-# Ejecutar ciclo
+
+=pod
+Ejecutar ciclo
+=cut
 sub ejecutar() {
     my ( $self ) = @_;
 

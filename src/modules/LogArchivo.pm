@@ -14,8 +14,6 @@ sub new() {
         _listos                => shift,
         _ejecutando            => shift,
         _salida                => shift,
-        _escribir_mutex        => shift,
-        _sumar_mutex           => shift,
         _contador_lectores     => shift,
         _escritores_bloqueados => shift,
         _lectores_bloqueados   => shift,
@@ -74,8 +72,6 @@ sub imprimir_estado_colas() {
             print $fh "$proceso_id_ejec              $proceso_llegada_ejec            $proceso_servicio_ejec\n";
             $proceso_ejecutando_indice = $proceso_ejecutando_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print $fh "\n";
@@ -94,8 +90,6 @@ sub imprimir_estado_colas() {
             print $fh "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_listo_indice = $proceso_listo_indice + 1;
         }
-
-        # print "-----------------------------------\n";
     }
 
     print $fh "\n";
@@ -114,8 +108,6 @@ sub imprimir_estado_colas() {
             print $fh "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print $fh "\n";
@@ -134,8 +126,6 @@ sub imprimir_estado_colas() {
             print $fh "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
             $proceso_bloq_indice = $proceso_bloq_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print $fh "\n";
@@ -154,8 +144,6 @@ sub imprimir_estado_colas() {
             print $fh "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
             $proceso_lector_bloq_indice = $proceso_lector_bloq_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
 }

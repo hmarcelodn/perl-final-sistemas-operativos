@@ -22,8 +22,6 @@ sub new {
         _quantum         => 0,
         _ejecuciones     => 0,
         _os              => shift,
-        _escribir_mutex  => shift,
-        _sumar_mutex     => shift,
         _contador_lectores => shift,
         _cola_lectores     => shift,
         _cola_escritores   => shift,
@@ -35,30 +33,45 @@ sub new {
     return $self
 }
 
+=pod
+Sumar las ejecuciones del proceso
+=cut
 sub sumar_ejecuciones() {
     my ( $self, $quantum ) = @_;
 
     $self->{_ejecuciones} = $self->{_ejecuciones} + 1;
 }
 
+=pod
+Restar ejecuciones del proceso
+=cut
 sub restar_ejecuciones() {
     my ( $self, $quantum ) = @_;
 
     $self->{_ejecuciones} = $self->{_ejecuciones} - 1;
 }
 
+=pod
+Retornar las ejecuciones actuales
+=cut
 sub contar_ejecuciones() {
     my ( $self, $quantum ) = @_;
 
     return $self->{_ejecuciones};
 }
 
+=pod
+Asignar tiempo de quantum al proceso (renovar)
+=cut
 sub asignar_quantum() {
     my ( $self, $quantum ) = @_;
 
     $self->{_quantum} = $quantum;
 }
 
+=pod
+Retornar tiempo de quantum asociado al proceso
+=cut
 sub contar_quantums() {
     my ( $self, $quantum ) = @_;
 
@@ -131,12 +144,14 @@ sub cambiar_a_bloqueado() {
 =pod
 Devuelve la cantidad a leer / escribir
 =cut
-
 sub get_cantidad() {
     my ( $self ) = @_;
     return $self ->{_cantidad};
 }
 
+=pod
+Sumar tiempo de servicio
+=cut
 sub sumar_tiempo_servicio() {
     my ( $self ) = @_;
 
