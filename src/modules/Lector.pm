@@ -25,8 +25,6 @@ Ejecuta comportamiento de proceso
 sub ejecutar() {
     my ( $self ) = @_;
 
-    # print "\n LECTORES: ".$self->{_cola_lectores}->pending()." ESCRITORES: ".$self->{_cola_escritores}->pending()." $self->{_proceso_id} \n";
-
     # Si no hay ningun escritor entonces proceso los lectores, sino bloqueo al lector
     if ( $self->{_cola_escritores}->pending() == 0 ) {
         # Si recien comienza, lo encola junto a los escritores

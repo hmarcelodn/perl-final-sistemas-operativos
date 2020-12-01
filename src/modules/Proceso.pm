@@ -137,55 +137,11 @@ sub get_cantidad() {
     return $self ->{_cantidad};
 }
 
-sub obtener_os() {
-    my ( $self ) = @_;
-
-    return $self ->{_os};
-}
-
-sub obtener_escribir_mutex() {
-    my ( $self ) = @_;
-
-    return $self ->{_escribir_mutex};
-}
-
-sub obtener_sumar_mutex() {
-    my ( $self ) = @_;
-
-    return $self->{_sumar_mutex};
-}
-
-sub descontar_tiempo_servicio() {
-    my ( $self ) = @_;
-
-    $self->{_tiempo_servicio} = $self->{_tiempo_servicio} - 1;
-}
-
 sub sumar_tiempo_servicio() {
     my ( $self ) = @_;
 
     $self->{_tiempo_servicio} = $self->{_tiempo_servicio} + 1;
 }
 
-sub decremento_contador_lectores() {
-    my ( $self ) = @_;
-
-    $self->{_contador_lectores} = $self->{_contador_lectores} - 1;
-    print "\n Contador de Lectores Restando: " . $self->{_contador_lectores} . "\n";
-}
-
-sub incremento_contador_lectores() {
-    my ( $self ) = @_;
-    print "\n Contador de Lectores Sumando antes: " . $self->{_contador_lectores} . "\n";
-
-    $self->{_contador_lectores} = $self->{_contador_lectores} + 1;
-    print "\n Contador de Lectores Sumando: " . $self->{_contador_lectores} . "\n";
-
-}
-
-sub obtener_contador_lectores() {
-    my ( $self ) = @_;
-    return $self->{_contador_lectores};
-}
 
 1;

@@ -26,7 +26,9 @@ use Lector;
 use Db;
 use Cpu;
 use Monitor;
+use LogArchivo;
 use Os;
+use Semaforo;
 
 # Semaforos
 my $escribir_mutex = Semaforo->new('escribir_mutex', 1);
@@ -56,6 +58,9 @@ my $cola_salida = Thread::Queue->new();
 
 # Instancia del monitor
 my $monitor = Monitor->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_bloqueados_escritores, $cola_bloqueados_lectores);
+
+# Instancia del Log de Archivo
+my $log_archivo = LogArchivo->new($cola_nuevos, $cola_listos, $cola_ejecutando, $cola_salida, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_bloqueados_escritores, $cola_bloqueados_lectores);
 
 # Reloj CPU
 my $ciclos :shared = 0;
@@ -157,9 +162,7 @@ sub simular() {
                 }
             })->detach();
 
-            # print "\n ANTES \n";
             $ciclo_siguiente_semaforo->down();
-            # print "\n DESPUES \n";
 
             # Pasar al siguiente ciclo de CPU
             $ciclos = $ciclos + 1;
@@ -179,6 +182,7 @@ sub simular() {
         while (1) {
             # Monitorear colas antes de ejecutar
             $monitor_semaforo->down();
+            $log_archivo->imprimir_estado_colas( $ciclos, $cpu_proceso_id, $cpu_estado );
 
             if ($modo_monitor == 1) {
                 $monitor->imprimir_estado_colas( $ciclos, $cpu_proceso_id, $cpu_estado );
@@ -237,6 +241,17 @@ sub simular() {
                 my $nuevo_proceso_servicio;
                 my $nuevo_proceso_tipo;
 
+                # Solicitar ingreso del comando en menu
+                while ($opcion < 1 || $opcion > 3) {
+                    print "+ INGRESAR OPCION: ";
+                    $opcion = <STDIN>;
+                    chomp $opcion;
+
+                    if ($opcion < 1 || $opcion > 3) {
+                        print "- OPCION INCORRECTA \n";
+                    }
+                }
+
                 print "INGRESAR TIPO PROCESO L (LECTOR) / E (ESCRITOR): ";
                 $nuevo_proceso_tipo = <STDIN>;
                 chomp $nuevo_proceso_tipo;
@@ -254,9 +269,9 @@ sub simular() {
                 chomp $nuevo_proceso_servicio;
 
                 if( $nuevo_proceso_tipo == 'L') {
-                    $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+                    $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
                 } else {
-                    $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO") );
+                    $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
                 }
                 print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
             }
@@ -271,6 +286,7 @@ sub simular() {
             }
             when (3) {
                 print "SALIR \n";
+                $log_archivo->close_file();
                 exit;
             }
             default {

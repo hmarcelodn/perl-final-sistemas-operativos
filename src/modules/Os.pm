@@ -33,7 +33,6 @@ sub asignar_proceso() {
 sub bloquear_proceso_escritor() {
     my ( $self, $proceso ) = @_;
 
-    # print "BLOQUEANDO A UN ESCRITOR \n";
     my $cpu = $self->{_cola_procesadores}->peek( 0 );
 
     # Primero duermo al CPU y luego duermo al proceso (queda bloqueado)
@@ -48,7 +47,6 @@ sub bloquear_proceso_escritor() {
 sub bloquear_proceso_lector() {
     my ( $self, $proceso ) = @_;
 
-    # print "BLOQUEANDO A UN LECTOR \n";
     my $cpu = $self->{_cola_procesadores}->peek( 0 );
 
     # Primero duermo al CPU y luego duermo al proceso (queda bloqueado)
