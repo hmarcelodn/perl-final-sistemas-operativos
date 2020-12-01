@@ -61,7 +61,7 @@ sub planificar() {
         my $proceso_nuevo = $self->{_nuevos}->dequeue_nb();
         my $ciclo_actual = $self->{_ciclos};
         my $proceso_nuevo_llegada = $proceso_nuevo->llegada();
-        if ( $ciclo_actual == $proceso_nuevo->llegada() ) {
+        if ( $ciclo_actual >= $proceso_nuevo->llegada() ) {
             $proceso_nuevo->asignar_quantum(2);
             $self->{_listos}->enqueue($proceso_nuevo);
         } else {
