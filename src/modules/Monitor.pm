@@ -66,8 +66,6 @@ sub imprimir_estado_colas() {
             print "$proceso_id_ejec              $proceso_llegada_ejec            $proceso_servicio_ejec\n";
             $proceso_ejecutando_indice = $proceso_ejecutando_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print "\n";
@@ -86,8 +84,6 @@ sub imprimir_estado_colas() {
             print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_listo_indice = $proceso_listo_indice + 1;
         }
-
-        # print "-----------------------------------\n";
     }
 
     print "\n";
@@ -106,8 +102,6 @@ sub imprimir_estado_colas() {
             print "$proceso_id              $proceso_llegada            $proceso_servicio\n";
             $proceso_nuevo_indice = $proceso_nuevo_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print "\n";
@@ -126,8 +120,6 @@ sub imprimir_estado_colas() {
             print "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
             $proceso_bloq_indice = $proceso_bloq_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print "\n";
@@ -146,8 +138,6 @@ sub imprimir_estado_colas() {
             print "$proceso_id_bloq              $proceso_llegada_bloq            $proceso_servicio_bloq\n";
             $proceso_lector_bloq_indice = $proceso_lector_bloq_indice + 1;
         }
-
-        # print "\n-----------------------------------\n";
     }
 
     print "\n\n Presione Enter para salir... \n\n";

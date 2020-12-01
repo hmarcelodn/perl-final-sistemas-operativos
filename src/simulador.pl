@@ -15,10 +15,10 @@ use Thread::Semaphore;
 use feature qw(switch);
 use Term::ReadKey;
 use Term::ANSIColor;
+use Scalar::Util qw(looks_like_number);
 
 # Modulos
 use Planificador;
-use Cola;
 use Proceso;
 use Despachador;
 use Escritor;
@@ -136,7 +136,6 @@ sub simular() {
     # Hilo 1 - Simulador
     my $simulacion_hilo = threads->create(sub {
         # Creo instancia de DB
-        # my $db_instancia = $cola_db->peek(0);
 
         while(1) {
             # Permitir ciclos de CPU
@@ -188,6 +187,9 @@ sub simular() {
                 $monitor->imprimir_estado_colas( $ciclos, $cpu_proceso_id, $cpu_estado );
             }
 
+            # Pausa para visualizar
+            sleep 2;
+
             # Permitir al CPU ejecutar la cola de listos
             $cpu_semaforo->up();
 
@@ -222,14 +224,10 @@ sub simular() {
         my $opcion = 0;
 
         # Solicitar ingreso del comando en menu
-        while ($opcion < 1 || $opcion > 3) {
+        while (!looks_like_number( $opcion ) || ($opcion < 1 || $opcion > 3)) {
             print "+ INGRESAR OPCION: ";
             $opcion = <STDIN>;
             chomp $opcion;
-
-            if ($opcion < 1 || $opcion > 3) {
-                print "- OPCION INCORRECTA \n";
-            }
         }
 
         given ($opcion)
@@ -239,40 +237,36 @@ sub simular() {
                 my $nuevo_proceso_pid;
                 my $nuevo_proceso_llegada;
                 my $nuevo_proceso_servicio;
-                my $nuevo_proceso_tipo;
+                my $nuevo_proceso_tipo = "";
 
-                # Solicitar ingreso del comando en menu
-                while ($opcion < 1 || $opcion > 3) {
-                    print "+ INGRESAR OPCION: ";
-                    $opcion = <STDIN>;
-                    chomp $opcion;
-
-                    if ($opcion < 1 || $opcion > 3) {
-                        print "- OPCION INCORRECTA \n";
-                    }
+                while ( $nuevo_proceso_tipo ne "L" && $nuevo_proceso_tipo ne "E" ) {
+                    print "INGRESAR TIPO PROCESO L (LECTOR) / E (ESCRITOR): ";
+                    $nuevo_proceso_tipo = <STDIN>;
+                    chomp $nuevo_proceso_tipo;
                 }
-
-                print "INGRESAR TIPO PROCESO L (LECTOR) / E (ESCRITOR): ";
-                $nuevo_proceso_tipo = <STDIN>;
-                chomp $nuevo_proceso_tipo;
 
                 print "INGRESAR PID: ";
                 $nuevo_proceso_pid = <STDIN>;
                 chomp $nuevo_proceso_pid;
 
-                print "INGRESAR TIEMPO LLEGADA: ";
-                $nuevo_proceso_llegada = <STDIN>;
-                chomp $nuevo_proceso_llegada;
+                while ( !looks_like_number( $nuevo_proceso_llegada ) ) {
+                    print "INGRESAR TIEMPO LLEGADA: ";
+                    $nuevo_proceso_llegada = <STDIN>;
+                    chomp $nuevo_proceso_llegada;
+                }
 
-                print "INGRESAR TIEMPO DE SERVICIO: ";
-                $nuevo_proceso_servicio = <STDIN>;
-                chomp $nuevo_proceso_servicio;
+                while ( !looks_like_number( $nuevo_proceso_servicio ) ) {
+                    print "INGRESAR TIEMPO DE SERVICIO: ";
+                    $nuevo_proceso_servicio = <STDIN>;
+                    chomp $nuevo_proceso_servicio;
+                }
 
-                if( $nuevo_proceso_tipo == 'L') {
+                if( $nuevo_proceso_tipo eq "L") {
                     $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
                 } else {
                     $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
                 }
+
                 print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
             }
             when (2) {
@@ -293,6 +287,8 @@ sub simular() {
                 print 0;
             }
         }
+
+        sleep 1;
     }
 }
 
