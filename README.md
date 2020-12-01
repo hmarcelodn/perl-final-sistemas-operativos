@@ -13,11 +13,12 @@ El problema consiste en tener una base de datos como recurso crítico, procesos 
 
 Antes de comenzar con la solución del simulador intentamos resolver el problema de los lectores/escritores utilizando una solución mediante semáforos como prueba de concepto para sincronizar distintas instancias de procesos lectores y escritores. La solución sincronizada que resultó efectiva es la siguiente.
 
-[IMAGEN 1]
+![Alt text](static/images/tabla.png?raw=true "Tabla")
 
 Teniendo el ejemplo sincronizado era posible deducir el funcionamiento de las diferentes colas de ejecución, listos, nuevos (correspondiente al planificador) y las colas correspondientes a los semáforos, según la estructura de datos citada en el libro de William Stallings.
 
-[IMAGEN 2]
+![Alt text](static/images/stallings.png?raw=true "Tabla")
+
 
 Entendiendo como se encolan los procesos en la estructura de datos de los semáforos da una idea de cómo se podrían simular los movimientos y bloqueos de todo el problema entero.
 
@@ -25,7 +26,7 @@ Entendiendo como se encolan los procesos en la estructura de datos de los semáf
 
 A continuación se expone el diagrama de clases con las abstracciones que fueron necesarias para construir el simulador y el detalle de cada operación de cada una de las abstracciones.
 
-[IMAGEN 3]
+![Alt text](static/images/clases.png?raw=true "Tabla")
 
 ## Ejecución
 
@@ -42,7 +43,7 @@ Requisitos:
 
 Para iniciar la simulación utilizamos el comando siguiente dentro del directorio src
 
-[IMAGEN 4]
+![Alt text](static/images/simulacion1.png?raw=true "sim1")
 
 Tras la ejecución del simulador, se presenta un menú con tres operaciones al usuario:
 
@@ -50,6 +51,8 @@ Tras la ejecución del simulador, se presenta un menú con tres operaciones al u
 
 1.  **AGREGAR UN NUEVO PROCESO**: Permite al usuario agregar un nuevo proceso a la cola de procesos nuevos para que el planificador lo considere en los tiempos configurados.
     
+![Alt text](static/images/simulacion2.png?raw=true "sim1")
+
 
 2.  **MONITOREAR COLAS DE PLANIFICACIÓN**: Es el modo de monitor activo que permite visualizar las colas en tiempo real.
     
@@ -85,6 +88,9 @@ Esta opción permite ver el uso de las diferentes colas por las cuales se mueven
     
 
 7.  **CANTIDAD DE LECTORES ESPERANDO**: Muestra la cantidad de procesos lectores bloqueados esperando por la finalización de procesos escritores.
+
+![Alt text](static/images/simulacion3.png?raw=true "sim1")
+
 
 ### TERMINAR
 
