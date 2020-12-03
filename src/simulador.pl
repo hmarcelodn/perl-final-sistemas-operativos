@@ -91,6 +91,7 @@ sub mock_procesos() {
     $cola_nuevos->enqueue( Escritor->new(0, 3, "E1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
     $cola_nuevos->enqueue( Lector->new(0, 3, "L2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
     $cola_nuevos->enqueue( Lector->new(0, 3, "L3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Lector->new(2, 10, "L4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
 }
 
 =pod
@@ -231,9 +232,9 @@ sub simular() {
                 }
 
                 if( $nuevo_proceso_tipo eq "L") {
-                    $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+                    $cola_nuevos->enqueue( Lector->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
                 } else {
-                    $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_escribir_mutex->peek(0), $cola_sumar_mutex->peek(0), $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+                    $cola_nuevos->enqueue( Escritor->new($nuevo_proceso_llegada, $nuevo_proceso_servicio, $nuevo_proceso_pid, "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
                 }
 
                 print "\n NUEVO PROCESO AGREGADO A LA COLA DE NUEVOS PROCESOS! \n";
