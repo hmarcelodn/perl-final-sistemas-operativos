@@ -34,16 +34,20 @@ sub planificar_mediano_plazo() {
 
     # Planifico escritores bloqueados, si no hay escritores ni lectores y existen escritores bloqueados
     if ( $self->{_escritores}->pending() == 0 && $self->{_lectores}->pending() == 0 && $self->{_escritores_bloqueados}->pending() > 0 ) {
-        my $proceso_bloqueado = $self->{_escritores_bloqueados}->dequeue_nb();
-        $proceso_bloqueado->cambiar_a_listo();
-        $self->{_listos}->enqueue( $proceso_bloqueado );
+        while($self->{_escritores_bloqueados}->pending() > 0) {
+            my $proceso_bloqueado = $self->{_escritores_bloqueados}->dequeue_nb();
+            $proceso_bloqueado->cambiar_a_listo();
+            $self->{_listos}->enqueue( $proceso_bloqueado );
+        }
     }
 
     # Planifico lectores bloqueados si no hay escritores y existen escritores bloqueados
     if ( $self->{_escritores}->pending() == 0 && $self->{_lectores_bloqueados}->pending() > 0 ) {
-        my $proceso_bloqueado = $self->{_lectores_bloqueados}->dequeue_nb();
-        $proceso_bloqueado->cambiar_a_listo();
-        $self->{_listos}->enqueue( $proceso_bloqueado );
+        while($self->{_lectores_bloqueados}->pending() > 0) {
+            my $proceso_bloqueado = $self->{_lectores_bloqueados}->dequeue_nb();
+            $proceso_bloqueado->cambiar_a_listo();
+            $self->{_listos}->enqueue($proceso_bloqueado);
+        }
     }
 }
 

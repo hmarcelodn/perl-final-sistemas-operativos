@@ -88,10 +88,11 @@ my $os_instance = Os->new( $cola_listos, $cola_procesadores, $cola_ejecutando, $
 Subrutina para agregar proceso nuevos a la cola de nuevos (testing)
 =cut
 sub mock_procesos() {
-    $cola_nuevos->enqueue( Escritor->new(0, 3, "E1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Escritor->new(0, 5, "E1", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
     $cola_nuevos->enqueue( Lector->new(0, 3, "L2", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
     $cola_nuevos->enqueue( Lector->new(0, 3, "L3", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
-    $cola_nuevos->enqueue( Lector->new(2, 10, "L4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Lector->new(2, 5, "L4", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
+    $cola_nuevos->enqueue( Escritor->new(3, 5, "E5", "NUEVO", 8, $ciclo_siguiente_semaforo, $os_instance, $cola_contador_lectores, $cola_lectores, $cola_escritores  ) );
 }
 
 =pod
